@@ -1,5 +1,12 @@
 #include "Util.h"
 
+#include <functional>
+
+struct ConnectionDetails{
+	SFD_t socketfd;
+	struct sockaddr address;
+};
+
 class Connection{
 	public:
 
@@ -38,7 +45,27 @@ class Connection{
 
 class BoundConnection{
 	public:
+		
+		BoundConnection();
+		~BoundConnection();
+
+		int sendData(const void* buffer, int bufferSize, ConnectionDetails connection);
+		int receiveData(void* buffer, int bufferSize, ConnectionDetails connection);
+
+		int createSocket();
+		int bindConnection();
+		void listen();
+
+		void closeConnection();
 
 	private:
+		SFD_t socketfd = -1;
+
+		struct addrinfo* addressInfo;
+
+		int max_connections = 10;
+		int current_connections = 0;
+
+		struct ConnectionDetails* connections = nullptr;
 
 };

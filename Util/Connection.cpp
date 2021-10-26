@@ -90,3 +90,37 @@ int Connection::receiveData(void* buffer, int bufferSize){
 	int recived_bytes = recv(socketfd, buffer, bufferSize, NULL);
 	return recived_bytes;
 }
+
+BoundConnection::BoundConnection(){
+	connections = new ConnectionDetails[max_connections];
+}
+
+BoundConnection::~BoundConnection(){
+	if(connections)
+		delete[] connections;
+}
+
+int BoundConnection::sendData(const void* buffer, int bufferSize){
+	
+}
+int BoundConnection::receiveData(void* buffer, int bufferSize){
+}
+
+int BoundConnection::createSocket(){
+}
+int BoundConnection::bindBoundConnection(){
+	if(int rc = bind(this->socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){
+		std::cout << "Error binding BoundConnection" << std::endl;
+		return rc;
+	}
+
+	return 0;
+}
+
+void BoundConnection::closeConnection(){
+	for(int i = 0; i < max_connections; i++){
+		close(connections[i].socketfd);
+	}
+}
+
+
