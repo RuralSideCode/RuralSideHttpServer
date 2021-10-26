@@ -4,9 +4,10 @@ class Connection{
 	public:
 
 		Connection();
+		~Connection();
 
 		void setProtocol(Protocol_t protocol);
-		void setAddress(Address_t address);
+		void setAddress(const char* address);
 		void setSocketType(SocketType_t socketType);
 		void setPort(const char* _port);
 		void setPort(int _port);
@@ -27,6 +28,7 @@ class Connection{
 		struct addrinfo addressHints;
 
 		const char* port = "";
+		const char* address = "";
 };
 
 class BoundConnection{

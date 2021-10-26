@@ -14,4 +14,7 @@ typedef struct sockaddr Address_t;
 
 typedef int SocketType_t;
 
-Address_t createAddress(sa_family_t family, char data[14]);
+Address_t createAddress(sa_family_t family, const char* address);
+
+#define PROTOCOL_TCP IPPROTO_TCP
+#define PROTOCOL_UDP IPPROTO_UDP

@@ -6,17 +6,24 @@
 
 Connection::Connection(){
 	std::memset(&addressHints, 0, sizeof(struct addrinfo));
+	addressHints.ai_family = AF_UNSPEC;
+}
+
+Connection::~Connection(){
+	freeaddrinfo(this->addressInfo);
 }
 
 void Connection::setProtocol(Protocol_t protocol){
 	addressHints.ai_protocol = protocol;
+
+	if(protocol == PROTOCOL_TCP)
+		addressHints.ai_socktype = SOCK_STREAM;
+	else
+		addressHints.ai_socktype = SOCK_DGRAM;
 }
 
-void Connection::setAddress(Address_t address){
-	Address_t* addr = new Address_t;
-	*addr = address;
-
-	addressHints.ai_addr = addr;
+void Connection::setAddress(const char* address){
+	this->address = address;
 }
 
 void Connection::setSocketType(SocketType_t socketType){
@@ -24,9 +31,9 @@ void Connection::setSocketType(SocketType_t socketType){
 }
 
 void Connection::setPort(const char* _port){
-	delete this->port;
 	this->port = _port;
 }
+
 void Connection::setPort(int _port){
 	std::string s = "";
 	s = std::to_string(_port);
@@ -35,7 +42,7 @@ void Connection::setPort(int _port){
 }
 
 int Connection::createConnection(){
-	if(socketfd != 0){
+	if(socketfd <= 0){
 		std::cout << "Please create a valid socket before trying to connect" << std::endl;
 		return 1;
 	}
@@ -49,16 +56,17 @@ int Connection::createConnection(){
 }
 
 void Connection::closeConnection(){
+	if(socketfd <= 0) return;
 	close(socketfd);
 }
 
 int Connection::createSocket(){
-	char node[INET6_ADDRSTRLEN];
+	std::cout << address << std::endl;
+	std::cout << this->port << std::endl;
 
-	inet_ntop(addressHints.ai_family, addressHints.ai_addr, node, INET6_ADDRSTRLEN);
-
-	if(int rc = getaddrinfo(node, port, &addressHints, &addressInfo) == -1){
+	if(int rc = getaddrinfo(address, port, &addressHints, &addressInfo) != 0){
 		std::cout << "Error retreiving address info" << std::endl;
+		std::cout << rc << std::endl;
 		std::cout << gai_strerror(rc) << std::endl;
 		return 1;
 	}
