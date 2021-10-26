@@ -1,0 +1,1 @@
+Think about adding an interface for BoundConnection to use for callbacks
