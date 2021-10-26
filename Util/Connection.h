@@ -11,6 +11,8 @@ struct ConnectionDetails{
 	struct addrinfo address; /**<The address to connect to. This is only needed in a bound socket to send and receive data*/
 };
 
+/** Connection is used to connect to any addresses and ports. Once connected to these ports you are then able to send and receive data. This class is useful when for when you are wanting to make request to a server. It can also be used by BoundConnection to create connections from a server to a client without working with a BoundConnection.
+ */
 class Connection{
 	public:
 	
@@ -84,29 +86,77 @@ class Connection{
 		const char* address = "";
 };
 
+/**BoundConnection is used as a way for a machine to listen on a port. These can only listen to local ports (thus why there is no way to set address). Once you are listening you will be able to set callbacks for when connections are made. BoundConnections should be used when setting up a server (to serve clients that connect).
+ */
 class BoundConnection{
 	public:
 		
+		/**Constructor for BoundConnection*/
 		BoundConnection();
 		~BoundConnection();
 
+		/*Used to set the port listend to by a BoundConnection. Note that this method accepts both a url and a port number (ex. "8080").
+		 * @param _port The port for the BoundConnection to listen to. Note that this can accept both a url and a port number (ex. "8080")*/
+		void setPort(const char* _port);
+
+		/*Same as BoundConnection::setPort(const char* _port) except this is able to take a true integer value
+		 * @param _port The integer value of a port for BoundConnection to listen to*/
+		void setPort(int _port);
+
+		/**Sets the BoundConnection protocol to use (TCP, UDP, etc.)
+		 * This will also automatically set the socket type if the connection is TCP or UDP
+		 * @param protocol The protocol for BoundConnection to use while communicating*/
+		void setProtocol(Protocol_t protocol);
+
+		void setConnectionCallback(std::function<void(ConnectionDetails)> callback);
+
+		/**Sends data accross a bound connection
+		 * @param buffer The buffer of data to send
+		 * @param bufferSize The size of const void* buffer
+		 * @param connection The connection that we should send data through
+		 * @return Returns the number of bytes that were successfully sent*/
 		int sendData(const void* buffer, int bufferSize, ConnectionDetails connection);
+
+		/**Receives data accross a bound connection
+		 * @param buffer The buffer to receive data through
+		 * @param bufferSize Size of void* buffer
+		 * @param ConnectionDetails The connection that we should receive data through
+		 * @return Returns the number of bytes that were received*/
 		int receiveData(void* buffer, int bufferSize, ConnectionDetails connection);
 
+		/**Creates a socket for the BoundConnection
+		 * @return Returns and error code. 0 on success. 1 on an error of retreiving address information. 2 on error creating socket.*/
 		int createSocket();
-		int bindConnection();
-		void listen();
 
+		/**Bind connection to the created socket.
+		 * Note: You must call BoundConnection::createSocket() before trying to bind to it.
+		 * @return Returns an error code. 0 on success. 1 on invalid socket. 2 on error binding*/
+		int bindConnection();
+
+		/**Will make the BoundConnection start listening to the port*/
+		int listenToConnection();
+
+		/**Closes the BoundConnection*/
 		void closeConnection();
 
 	private:
 		SFD_t socketfd = -1;
 
 		struct addrinfo* addressInfo;
+		const char* port;
+
+		Protocol_t protocol = PROTOCOL_TCP;
+		SocketType_t socketType = SOCK_STREAM;
 
 		int max_connections = 10;
 		int current_connections = 0;
 
 		struct ConnectionDetails* connections = nullptr;
+
+		std::function<void(ConnectionDetails)> callback;
+
+		struct addrinfo constructAddressHints();
+
+		bool isRunning = true;
 
 };

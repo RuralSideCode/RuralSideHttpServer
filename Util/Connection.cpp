@@ -117,14 +117,26 @@ BoundConnection::~BoundConnection(){
 		delete[] connections;
 }
 
+void BoundConnection::setProtocol(Protocol_t protocol){
+	this->protocol = protocol;
+
+	if(protocol == PROTOCOL_TCP)
+		socketType = SOCK_STREAM;
+	else if(protocol == PROTOCOL_UDP)
+		socketType = SOCK_DGRAM;
+}
+
 int BoundConnection::createSocket(){
 	return 0;
 }
 
 int BoundConnection::bindConnection(){
+	if(socketfd <= 0){
+		return 1;
+	}
 	if(int rc = bind(this->socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){
 		std::cout << "Error binding BoundConnection" << std::endl;
-		return rc;
+		return 2;
 	}
 
 	return 0;
@@ -136,4 +148,42 @@ void BoundConnection::closeConnection(){
 	}
 }
 
+void BoundConnection::setPort(const char* _port){
+	this->port = _port;	
+}
+
+void BoundConnection::setPort(int _port){
+	std::string s = "";
+	s = std::to_string(_port);
+
+	this->setPort(s.c_str());
+}
+
+void BoundConnection::setConnectionCallback(std::function<void(ConnectionDetails)> callback){
+	this->callback = callback;
+}
+
+struct addrinfo BoundConnection::constructAddressHints(){
+	struct addrinfo info;
+	std::memset(&info, 0, sizeof(struct addrinfo));
+	
+	info.ai_family = AF_UNSPEC;
+	info.ai_flags = AI_PASSIVE;
+	info.ai_protocol = this->protocol;
+	info.ai_socktype = this->socketType;
+
+	return info;
+}
+
+int BoundConnection::listenToConnection(){
+	if(int rc = listen(this->socketfd, this->max_connections) == -1){
+		return 1;
+	}
+
+	while(isRunning){
+
+	}
+
+	return 0;
+}
 
