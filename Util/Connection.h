@@ -1,6 +1,7 @@
 #include "Util.h"
 
 #include <functional>
+#include <string>
 
 /**
  * Connection Details is used to keep track of a connection.
@@ -82,8 +83,8 @@ class Connection{
 
 		struct addrinfo addressHints;
 
-		const char* port = "";
-		const char* address = "";
+		std::string port = "";
+		std::string address = "";
 };
 
 /**BoundConnection is used as a way for a machine to listen on a port. These can only listen to local ports (thus why there is no way to set address). Once you are listening you will be able to set callbacks for when connections are made. BoundConnections should be used when setting up a server (to serve clients that connect).
@@ -108,6 +109,8 @@ class BoundConnection{
 		 * @param protocol The protocol for BoundConnection to use while communicating*/
 		void setProtocol(Protocol_t protocol);
 
+		/**This sets the callback for when BoundConnection is connected to by a client. It is very important to set this as this is the only way to handle requests from clients.
+		 * @param callback The callback to be called on a connection*/
 		void setConnectionCallback(std::function<void(ConnectionDetails)> callback);
 
 		/**Sends data accross a bound connection
@@ -143,7 +146,7 @@ class BoundConnection{
 		SFD_t socketfd = -1;
 
 		struct addrinfo* addressInfo = nullptr;
-		const char* port;
+		std::string  port;
 
 		Protocol_t protocol = PROTOCOL_TCP;
 		SocketType_t socketType = SOCK_STREAM;

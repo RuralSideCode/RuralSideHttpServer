@@ -18,7 +18,7 @@ void callback(ConnectionDetails cd){
 int main(){
 
 	BoundConnection bc;
-	bc.setPort("80");
+	bc.setPort(80);
 	bc.setConnectionCallback(callback);
 
 	if(int rc = bc.createSocket() != 0){

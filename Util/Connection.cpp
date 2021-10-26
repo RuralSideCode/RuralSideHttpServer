@@ -58,10 +58,7 @@ void Connection::setPort(const char* _port){
 }
 
 void Connection::setPort(int _port){
-	std::string s = "";
-	s = std::to_string(_port);
-
-	this->setPort(s.c_str());
+	this->port = std::to_string(_port);
 }
 
 int Connection::createConnection(){
@@ -84,7 +81,7 @@ void Connection::closeConnection(){
 }
 
 int Connection::createSocket(){
-	if(int rc = getaddrinfo(address, port, &addressHints, &addressInfo) != 0){
+	if(int rc = getaddrinfo(address.c_str(), port.c_str(), &addressHints, &addressInfo) != 0){
 		std::cout << "Error retreiving address info" << std::endl;
 		std::cout << rc << std::endl;
 		std::cout << gai_strerror(rc) << std::endl;
@@ -133,7 +130,7 @@ void BoundConnection::setProtocol(Protocol_t protocol){
 int BoundConnection::createSocket(){
 	struct addrinfo hints = this->constructAddressHints();
 
-	if(int rc = getaddrinfo(NULL, port, &hints, &this->addressInfo) != 0){
+	if(int rc = getaddrinfo(NULL, port.c_str(), &hints, &this->addressInfo) != 0){
 		return 1;
 	}
 
@@ -152,7 +149,6 @@ int BoundConnection::bindConnection(){
 	}
 
 	if(int rc = bind(this->socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){
-		std::cout << strerror(errno) << std::endl;
 		return 2;
 	}
 
@@ -170,10 +166,7 @@ void BoundConnection::setPort(const char* _port){
 }
 
 void BoundConnection::setPort(int _port){
-	std::string s = "";
-	s = std::to_string(_port);
-
-	this->setPort(s.c_str());
+	this->port = std::to_string(_port);
 }
 
 void BoundConnection::setConnectionCallback(std::function<void(ConnectionDetails)> callback){
@@ -206,17 +199,21 @@ int BoundConnection::listenToConnection(){
 
 	if(rc == -1){
 		//TODO: Right now we are doing nothing we accept() fails
-		std::cout << strerror(errno) << std::endl;
-		std::cout << "Error accepting" << std::endl;
-		return 1;
+		return 2;
 	}
 
 	ConnectionDetails connectionDetails{
 		rc, *(sockaddr*)incomingConnection
 	};
 
-	this->callback(connectionDetails);
-
+	pid_t process_id = fork();
+	if(process_id == -1){
+		return 3;
+	}
+	else if(process_id == 0){ //If we are the child process
+		this->callback(connectionDetails);
+		return 0;
+	}
 	//}
 
 	return 0;
