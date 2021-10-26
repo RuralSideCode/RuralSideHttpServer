@@ -1,8 +1,11 @@
 #include "Connection.h"
 
 #include <cstring>
+#include <string.h>
 #include <string>
 #include <iostream>
+
+#include <errno.h>
 
 Connection::Connection(){
 	std::memset(&addressHints, 0, sizeof(struct addrinfo));
@@ -17,7 +20,6 @@ Connection::Connection(ConnectionDetails cd){
 		return;
 	}
 
-	*addressInfo = cd.address;
 	socketfd = cd.socketfd;
 }
 
@@ -28,7 +30,7 @@ Connection::~Connection(){
 ConnectionDetails Connection::getConnectionDetails(){
 	struct ConnectionDetails cd{
 		this->socketfd,
-		*this->addressInfo
+		*this->addressInfo->ai_addr
 	};
 
 	return cd;
@@ -115,6 +117,8 @@ BoundConnection::BoundConnection(){
 BoundConnection::~BoundConnection(){
 	if(connections)
 		delete[] connections;
+
+	freeaddrinfo(this->addressInfo);
 }
 
 void BoundConnection::setProtocol(Protocol_t protocol){
@@ -127,15 +131,28 @@ void BoundConnection::setProtocol(Protocol_t protocol){
 }
 
 int BoundConnection::createSocket(){
+	struct addrinfo hints = this->constructAddressHints();
+
+	if(int rc = getaddrinfo(NULL, port, &hints, &this->addressInfo) != 0){
+		return 1;
+	}
+
+	this->socketfd = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
+
+	if(this->socketfd == -1){
+		return 2;
+	}
+
 	return 0;
 }
 
 int BoundConnection::bindConnection(){
-	if(socketfd <= 0){
+	if(socketfd == -1){
 		return 1;
 	}
+
 	if(int rc = bind(this->socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){
-		std::cout << "Error binding BoundConnection" << std::endl;
+		std::cout << strerror(errno) << std::endl;
 		return 2;
 	}
 
@@ -180,9 +197,27 @@ int BoundConnection::listenToConnection(){
 		return 1;
 	}
 
-	while(isRunning){
+//	while(isRunning){
 
+	struct sockaddr_storage* incomingConnection;
+	socklen_t len = 0;
+
+	int rc = accept(this->socketfd, (struct sockaddr*)incomingConnection, &len);
+
+	if(rc == -1){
+		//TODO: Right now we are doing nothing we accept() fails
+		std::cout << strerror(errno) << std::endl;
+		std::cout << "Error accepting" << std::endl;
+		return 1;
 	}
+
+	ConnectionDetails connectionDetails{
+		rc, *(sockaddr*)incomingConnection
+	};
+
+	this->callback(connectionDetails);
+
+	//}
 
 	return 0;
 }

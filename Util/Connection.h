@@ -8,7 +8,7 @@
  */
 struct ConnectionDetails{
 	SFD_t socketfd; /**<The socket file descriptor used to identify a web socket*/
-	struct addrinfo address; /**<The address to connect to. This is only needed in a bound socket to send and receive data*/
+	struct sockaddr address; /**<The address to connect to. This is only needed in a bound socket to send and receive data*/
 };
 
 /** Connection is used to connect to any addresses and ports. Once connected to these ports you are then able to send and receive data. This class is useful when for when you are wanting to make request to a server. It can also be used by BoundConnection to create connections from a server to a client without working with a BoundConnection.
@@ -142,7 +142,7 @@ class BoundConnection{
 	private:
 		SFD_t socketfd = -1;
 
-		struct addrinfo* addressInfo;
+		struct addrinfo* addressInfo = nullptr;
 		const char* port;
 
 		Protocol_t protocol = PROTOCOL_TCP;
