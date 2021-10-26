@@ -9,8 +9,29 @@ Connection::Connection(){
 	addressHints.ai_family = AF_UNSPEC;
 }
 
+Connection::Connection(ConnectionDetails cd){
+	std::memset(&addressHints, 0, sizeof(struct addrinfo));
+
+	//Check to make sure that the socket file descriptor is valid
+	if(cd.socketfd <= 0){
+		return;
+	}
+
+	*addressInfo = cd.address;
+	socketfd = cd.socketfd;
+}
+
 Connection::~Connection(){
 	freeaddrinfo(this->addressInfo);
+}
+
+ConnectionDetails Connection::getConnectionDetails(){
+	struct ConnectionDetails cd{
+		this->socketfd,
+		*this->addressInfo
+	};
+
+	return cd;
 }
 
 void Connection::setProtocol(Protocol_t protocol){
@@ -77,17 +98,13 @@ int Connection::createSocket(){
 	return 0;
 }
 
-const struct addrinfo Connection::getAddressInfo(){
-	return *addressInfo;
-}
-
 int Connection::sendData(const void* buffer, int bufferSize){
-	int sent_bytes = send(socketfd, buffer, bufferSize, NULL);
+	int sent_bytes = send(socketfd, buffer, bufferSize, 0);
 	return sent_bytes;
 }
 
 int Connection::receiveData(void* buffer, int bufferSize){
-	int recived_bytes = recv(socketfd, buffer, bufferSize, NULL);
+	int recived_bytes = recv(socketfd, buffer, bufferSize, 0);
 	return recived_bytes;
 }
 
@@ -100,15 +117,11 @@ BoundConnection::~BoundConnection(){
 		delete[] connections;
 }
 
-int BoundConnection::sendData(const void* buffer, int bufferSize){
-	
-}
-int BoundConnection::receiveData(void* buffer, int bufferSize){
+int BoundConnection::createSocket(){
+	return 0;
 }
 
-int BoundConnection::createSocket(){
-}
-int BoundConnection::bindBoundConnection(){
+int BoundConnection::bindConnection(){
 	if(int rc = bind(this->socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){
 		std::cout << "Error binding BoundConnection" << std::endl;
 		return rc;

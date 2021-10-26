@@ -2,36 +2,77 @@
 
 #include <functional>
 
+/**
+ * Connection Details is used to keep track of a connection.
+ * It can be used to pass around a connection for other programs to use it
+ */
 struct ConnectionDetails{
-	SFD_t socketfd;
-	struct sockaddr address;
+	SFD_t socketfd; /**<The socket file descriptor used to identify a web socket*/
+	struct addrinfo address; /**<The address to connect to. This is only needed in a bound socket to send and receive data*/
 };
 
 class Connection{
 	public:
-
+	
+		/** Default constructor for Connection*/
 		Connection();
+
+		/**Creates a Connection object with a already existing ConnectionDetails
+		 * @param cd The ConnectionDetails to use when constructing this Connection
+		 */
+		Connection(ConnectionDetails cd);
+
 		~Connection();
 
+		/**This will set the protocol of a connection.
+		 * This will also the the socket type automatically if PROTOCOL_TCP or PROTOCOL_UDP is used.
+		 * @param protocol The protocol to use.*/
 		void setProtocol(Protocol_t protocol);
+
+		/**This will set the address that the connection should try to use.
+		 * A url or ip address can be sent (through a cstring)
+		 * @param address The url or ip address to attempt to connect to*/
 		void setAddress(const char* address);
+
+		/**This will set the socket type the connection should use when connecting.
+		 * This should not be used if you are using a TCP or UDP protocol as it will be set automatically in setProtocol(Protocol_t protocol).
+		 * @param socketType The socket type to use*/
 		void setSocketType(SocketType_t socketType);
+
+		/**This will set the port that the connection should attempt to connect to.
+		 * @param _port The port to use. This can be a number (i.e 8080), or it can also be a well known port name (i.e http or ftp)*/
 		void setPort(const char* _port);
+
+		/**This will set the port that the connection should attempt to connect to.
+		 * This function is another version of Connection::setPort(const char* _port), except this will only accept and integer value.
+		 * @param _port The port to use*/
 		void setPort(int _port);
 
+		/**This will use the available data given to Connection, and will try to make a connection.
+		 * Note that Connection::createSocket() should be used before this, otherwise it will not attempt to connect.
+		 * @return A return code. 0 on success. 1 on invalid socket. 2 on failed attempt to connect*/
 		int createConnection();
+
+		/**This will close a connection*/
 		void closeConnection();
+
+		/**This will create a socket to connect to.
+		 * All data should be set before calling this (port, address, protocol, etc.)
+		 * @return Returns a return code. 0 on success. 1 on the unablity to find a valid address. 2 on failure to create a socket.*/
 		int createSocket();
 
-		//Sends buffer of data (of bufferSize)
-		//Returns data sent in bytes
+		/**This will return the ConnectionDetails of this Connection.
+		 * These details can be used to create a copy of this Connection
+		 * @return Returns the ConnectionDetails of this Connection*/
+		ConnectionDetails getConnectionDetails();
+
+		/**Sends buffer of data (of bufferSize)
+		@return Amount of data sent in bytes */
 		int sendData(const void* buffer, int bufferSize);
 
-		//Receives data and puts data in buffer (of bufferSize)
-		//Returns data received in bytes
+		/**Receives data and puts data in buffer (of bufferSize)
+		@return Amount of data received in bytes*/
 		int receiveData(void* buffer, int bufferSize);
-
-		const struct addrinfo getAddressInfo();
 
 	private:
 		SFD_t socketfd = -1;

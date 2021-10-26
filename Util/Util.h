@@ -4,17 +4,16 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+/** @file Util.h Util contains lots of definitions used by the server to keeps things more concise*/
 
-//Socket File Descriptor
-typedef int SFD_t;
+typedef int SFD_t; /**< Socket File Descriptor*/
 
-typedef int Protocol_t;
+typedef int Protocol_t; /**< Protocol (TCP, UDP, etc.)*/
 
-typedef struct sockaddr Address_t;
+typedef struct sockaddr Address_t; /**< Socket Address*/
 
-typedef int SocketType_t;
+typedef int SocketType_t; /**< Socket Type (SOCK_STREAM, SOCK_DGRAM)
+							Note that this will usually be automatically set when setting a protocol(Protocol_t)*/
 
-Address_t createAddress(sa_family_t family, const char* address);
-
-#define PROTOCOL_TCP IPPROTO_TCP
-#define PROTOCOL_UDP IPPROTO_UDP
+#define PROTOCOL_TCP IPPROTO_TCP /**< Defines IPPROTO_TCP as PROTOCOL_TCP. This can be used for a Protocol_t*/
+#define PROTOCOL_UDP IPPROTO_UDP /**< Defines IPPROTO_UDP as PROTOCOL_UDP. This can be used for a Protocol_t*/
