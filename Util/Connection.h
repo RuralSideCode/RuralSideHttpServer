@@ -16,8 +16,13 @@ class Connection{
 		void closeConnection();
 		int createSocket();
 
-		int send(void* data, int size);
-		void recive(void* data, int& size);
+		//Sends buffer of data (of bufferSize)
+		//Returns data sent in bytes
+		int sendData(const void* buffer, int bufferSize);
+
+		//Receives data and puts data in buffer (of bufferSize)
+		//Returns data received in bytes
+		int receiveData(void* buffer, int bufferSize);
 
 		const struct addrinfo getAddressInfo();
 

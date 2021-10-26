@@ -61,9 +61,6 @@ void Connection::closeConnection(){
 }
 
 int Connection::createSocket(){
-	std::cout << address << std::endl;
-	std::cout << this->port << std::endl;
-
 	if(int rc = getaddrinfo(address, port, &addressHints, &addressInfo) != 0){
 		std::cout << "Error retreiving address info" << std::endl;
 		std::cout << rc << std::endl;
@@ -82,4 +79,14 @@ int Connection::createSocket(){
 
 const struct addrinfo Connection::getAddressInfo(){
 	return *addressInfo;
+}
+
+int Connection::sendData(const void* buffer, int bufferSize){
+	int sent_bytes = send(socketfd, buffer, bufferSize, NULL);
+	return sent_bytes;
+}
+
+int Connection::receiveData(void* buffer, int bufferSize){
+	int recived_bytes = recv(socketfd, buffer, bufferSize, NULL);
+	return recived_bytes;
 }
