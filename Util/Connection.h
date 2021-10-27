@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Util.h"
 
 #include <functional>
@@ -81,10 +83,12 @@ class Connection{
 		SFD_t socketfd = -1;
 		struct addrinfo* addressInfo;
 
-		struct addrinfo addressHints;
-
 		std::string port = "";
 		std::string address = "";
+
+	protected:
+		struct addrinfo addressHints;
+
 };
 
 /**BoundConnection is used as a way for a machine to listen on a port. These can only listen to local ports (thus why there is no way to set address). Once you are listening you will be able to set callbacks for when connections are made. BoundConnections should be used when setting up a server (to serve clients that connect).

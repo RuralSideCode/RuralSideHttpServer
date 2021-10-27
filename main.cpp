@@ -4,13 +4,7 @@
 void callback(ConnectionDetails cd){
 	Connection conn(cd);
 
-	std::cout << "Connected!" << std::endl;
 
-	char buf[1024];
-
-	conn.receiveData(buf, 1024);
-
-	std::cout << buf << std::endl;
 
 	conn.closeConnection();
 }

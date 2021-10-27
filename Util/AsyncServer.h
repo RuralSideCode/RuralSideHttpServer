@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Connection.h"
 
 /** @file AsyncServer.h AsyncServer provides convenient functions to create an asyncronous server. It takes care of a the threading for you!
