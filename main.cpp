@@ -1,10 +1,15 @@
 #include <iostream>
 #include "Connection.h" 
 
+#include "HttpRequestParser.h"
+
 void callback(ConnectionDetails cd){
 	Connection conn(cd);
 
+	char buf[1024];
+	conn.receiveData(buf, 1024);
 
+	HttpRequestParser::parse(buf, nullptr, nullptr);
 
 	conn.closeConnection();
 }
