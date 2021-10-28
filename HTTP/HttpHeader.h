@@ -7,11 +7,30 @@
 class HttpHeader{
 	public:
 	
+		/**
+		 * Default constructor for HttpHeader
+		 */
 		HttpHeader(); 
 
+		/**
+		 * Given a field name, 
+		 * this function will search its HttpHeader for a corresponding value
+		 * @param fieldName The key value to search for
+		 * @return A value that was found within the HttpHeader, or a nullptr if one does not exist
+		 */
 		const char* getField(std::string fieldName) const;
+
+		/**
+		 * This will set a field and value pair within the HttpHeader
+		 * @param fieldName The key value
+		 * @param fieldValue The value item
+		 */
 		void setField(std::string fieldName, std::string fieldValue);
 
+		/**
+		 * Will gather all the keys that exist within the HttpHeader
+		 * @return A const vector<string> object containing all of the key values
+		 */
 		const std::vector<std::string> getKeys() const;
 
 		const std::string getRequestMethod() const;

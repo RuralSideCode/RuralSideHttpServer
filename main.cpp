@@ -11,11 +11,9 @@ void callback(ConnectionDetails cd){
 	conn.receiveData(buf, 1024);
 
 	HttpHeader header = *HttpRequestParser::parse(buf, nullptr, nullptr);
-	
-	std::vector<std::string> keys = header.getKeys();
 
-	for(auto s : keys){
-		std::cout << "Keys: " << s << std::endl << "\tValue: " << header.getField(s) << std::endl;
+	if(header.getRequestMethod() == "GET" && header.getRequestResource() == "/"){
+		std::cout << "Send out the HTML file!" << std::endl;
 	}
 
 	conn.closeConnection();

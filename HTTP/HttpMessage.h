@@ -7,8 +7,10 @@
 class HttpMessage{
 
 	public:
-		HttpMessage();
+		HttpMessage(HttpHeader& header, void* data, int dataSize);
 		~HttpMessage();
+		
+		const char* createMessage() const;
 
 		const char* getData(int& size);
 
@@ -19,5 +21,7 @@ class HttpMessage{
 		int dataSize = 0;
 
 		struct HttpHeader httpHeader;
+
+		char* completedMessage = nullptr;
 
 };
