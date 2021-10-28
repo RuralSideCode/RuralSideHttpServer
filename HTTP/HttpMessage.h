@@ -10,9 +10,14 @@ class HttpMessage{
 		HttpMessage();
 		~HttpMessage();
 
-		struct HttpHeader httpHeader;
+		const char* getData(int& size);
 
+		const HttpHeader* getHttpHeader();
 
 	private:
+		char* data = nullptr;
+		int dataSize = 0;
+
+		struct HttpHeader httpHeader;
 
 };

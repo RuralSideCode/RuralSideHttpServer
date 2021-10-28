@@ -51,7 +51,7 @@ void HttpRequestParser::addRequestMethod(HttpHeader& header, std::stringstream& 
 	std::getline(ss, requestResource, ' ');
 	std::getline(ss, requestVersion);
 
-	header.requestMethod = requestMethod;
-	header.requestResource = requestResource;
-	header.requestVersion = requestVersion;
+	header.setRequestMethod(requestMethod);
+	header.setRequestResource(requestResource);
+	header.setRequestVersion(requestVersion);
 }
