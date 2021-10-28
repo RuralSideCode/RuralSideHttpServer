@@ -1,6 +1,7 @@
 #include <iostream>
-#include "Connection.h" 
+#include <vector>
 
+#include "Connection.h" 
 #include "HttpRequestParser.h"
 
 void callback(ConnectionDetails cd){
@@ -9,10 +10,17 @@ void callback(ConnectionDetails cd){
 	char buf[1024];
 	conn.receiveData(buf, 1024);
 
-	HttpRequestParser::parse(buf, nullptr, nullptr);
+	HttpHeader header = *HttpRequestParser::parse(buf, nullptr, nullptr);
+	
+	std::vector<std::string> keys = header.getKeys();
+
+	for(auto s : keys){
+		std::cout << "Keys: " << s << std::endl << "\tValue: " << header.getField(s) << std::endl;
+	}
 
 	conn.closeConnection();
 }
+
 
 int main(){
 

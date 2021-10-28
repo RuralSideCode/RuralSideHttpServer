@@ -190,7 +190,7 @@ int BoundConnection::listenToConnection(){
 		return 1;
 	}
 
-//	while(isRunning){
+	// while(isRunning){
 
 	struct sockaddr_storage* incomingConnection;
 	socklen_t len = 0;
