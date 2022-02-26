@@ -1,5 +1,7 @@
 #include "HttpServer.h"
 
+#include <iostream>
+
 void httpServerCallback(ConnectionDetails conn, HttpServer* server){
 	server->request(conn);
 }
@@ -10,6 +12,7 @@ auto createHttpServerCallback(HttpServer* server) -> decltype(std::bind(httpServ
 }
 
 int HttpServer::request(ConnectionDetails conn){
+	std::cout << "Sending data" << std::endl;
 	Connection connection(conn);
 
 	connection.sendData("Hello", 5);

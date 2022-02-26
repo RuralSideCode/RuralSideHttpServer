@@ -22,6 +22,7 @@ int main(){
 	}
 
 	HttpServer server;
+	std::cout << "Created httpserver" << std::endl;
 
 	auto serverCallback = createHttpServerCallback(&server);
 	bc.setConnectionCallback(serverCallback);
