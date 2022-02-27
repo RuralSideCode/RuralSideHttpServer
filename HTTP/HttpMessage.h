@@ -11,7 +11,10 @@ class HttpMessage{
 		~HttpMessage();
 		
 		const char* getData(int* size);
-		std::string getData() { return this->completedMessage; }
+		std::string getData_S() { return this->completedMessage; }
+
+		const char* getData() { return this->data; }
+		int size() { return this->dataSize; }
 
 		const HttpHeader* getHttpHeader();
 
