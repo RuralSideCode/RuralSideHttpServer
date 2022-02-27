@@ -4,14 +4,21 @@
 #include <iostream>
 #include <fstream>
 
+/*
 bool Logging::isInit = false;
 bool Logging::enable = true;
+Logging Logging::stream;
+*/
 
-std::vector<LoggingHandler*> Logging::handlers;
+//std::vector<LoggingHandler*> Logging::handlers;
+
+const char* Logging::endl = "\n";
+
+Logging Log;
 
 void Logging::init() {
 	if (isInit) {
-		Logging::warning("Logging has already been intialized. Please make sure that the logging module has only called init() once.");
+		Log.warning("Logging has already been intialized. Please make sure that the logging module has only called init() once.");
 		return;
 	}
 	isInit = true;
@@ -26,57 +33,63 @@ void Logging::close() {
 }
 
 void Logging::addHandler(LoggingHandler* handler) {
-	Logging::handlers.push_back(handler);
+	handlers.push_back(handler);
 }
 
-void Logging::log(const char* message, Logging::LogLevel level) {
+void Logging::logFormatted(const char* message, Logging::LogLevel level) {
 	for (auto h : handlers) {
 		if (h != nullptr)
 			h->log(message, level);
 	}
 }
 
+void Logging::log(const char* message){
+	for (auto h : handlers) {
+		if (h != nullptr)
+			h->logMessage(message);
+	}
+}
+
 void Logging::info(const char* message) {
-	Logging::log(message, Logging::INFO);
+	logFormatted(message, Logging::INFO);
 }
 
 void Logging::warning(const char* message) {
-	Logging::log(message, Logging::WARNING);
+	logFormatted(message, Logging::WARNING);
 }
 
 void Logging::error(const char* message) {
-	Logging::log(message, Logging::ERROR);
+	logFormatted(message, Logging::ERROR);
 }
 
 void Logging::debug(const char* message) {
-	Logging::log(message, Logging::DEBUG);
+	logFormatted(message, Logging::DEBUG);
 }
 
 void Logging::critical(const char* message) {
-	Logging::log(message, Logging::CRITICAL);
+	logFormatted(message, Logging::CRITICAL);
 }
 
 void Logging::exception(std::exception e) {
 	//TODO: This does not display e.what()
-	Logging::log(e.what(), Logging::EXCEPTION);
+	logFormatted(e.what(), Logging::EXCEPTION);
 }
 
 const char* Logging::logLevelToString(LogLevel level) {
 	switch (level) {
-	case LogLevel::DEBUG: return "DEBUG"; break;
-	case LogLevel::INFO: return "INFO"; break;
-	case LogLevel::WARNING: return "WARNING"; break;
-	case LogLevel::ERROR: return "ERROR"; break;
-	case LogLevel::CRITICAL: return "CRITICAL"; break;
-	case LogLevel::EXCEPTION: return "EXCEPTION"; break;
-	default: return ""; break;
+		case LogLevel::DEBUG: return "DEBUG: "; break;
+		case LogLevel::INFO: return "INFO: "; break;
+		case LogLevel::WARNING: return "WARNING: "; break;
+		case LogLevel::ERROR: return "ERROR: "; break;
+		case LogLevel::CRITICAL: return "CRITICAL: "; break;
+		case LogLevel::EXCEPTION: return "EXCEPTION: "; break;
+		default: return ""; break;
 	}
 }
 
 std::string Logging::getBasicLogMessage(const char* message, Logging::LogLevel level) {
 	std::stringstream ss;
 	ss << Logging::logLevelToString(level);
-	ss << ": ";
 	ss << message;
 	ss << '\n';
 	return ss.str();
@@ -85,42 +98,69 @@ std::string Logging::getBasicLogMessage(const char* message, Logging::LogLevel l
 void LoggingHandler::log(const char* message, Logging::LogLevel messageLevel) {
 	if (!this->enable) return;
 
+	std::string formattedMessage = Logging::getBasicLogMessage(message, messageLevel);
+
 	if (messageLevel >= this->level) {
-		this->logMessage(message, messageLevel);
+		this->logMessage(formattedMessage.c_str());
 	}
 }
 
-void LoggingHandler::logMessage(const char* message, Logging::LogLevel messageLevel) {}
-
-void ConsoleLoggingHandler::logMessage(const char* message, Logging::LogLevel messageLevel) {
-	std::string newMessage = Logging::getBasicLogMessage(message, messageLevel);
-	std::cout << newMessage;
+Logging& operator << (Logging& logger, const char* val){
+	logger.log(val);
+	return logger;
+}
+Logging& operator << (Logging& logger, const char val){
+	logger.log(std::to_string(val).c_str());
+	return logger;
+}
+Logging& operator << (Logging& logger, const int val){
+	logger.log(std::to_string(val).c_str());
+	return logger;
+}
+Logging& operator << (Logging& logger, const long val){
+	logger.log(std::to_string(val).c_str());
+	return logger;
+}
+Logging& operator << (Logging& logger, const float val){
+	logger.log(std::to_string(val).c_str());
+	return logger;
+}
+Logging& operator << (Logging& logger, const double val){
+	logger.log(std::to_string(val).c_str());
+	return logger;
+}
+Logging& operator << (Logging& logger, const std::string val){
+	logger.log(val.c_str());
+	return logger;
+}
+Logging& operator << (Logging& logger, const Logging::LogLevel& level){
+	logger.log(Logging::logLevelToString(level));
+	return logger;
 }
 
-void FileOutputLoggingHandler::logMessage(const char* message, Logging::LogLevel messageLevel) {
+//void LoggingHandler::logMessage(const char* message, Logging::LogLevel messageLevel) {}
 
-	std::ofstream output(this->filePath, std::ios_base::out | std::ios_base::app);
+void ConsoleLoggingHandler::logMessage(const char* message) {
+	std::cout << message;
+}
 
-	if (output.is_open()) {
-		std::string loggedMessage = Logging::getBasicLogMessage(message, messageLevel);
+void FileOutputLoggingHandler::logMessage(const char* message) {
+	if(!outputStream.is_open()){
+		outputStream = std::ofstream(this->filePath);
 
-		output << loggedMessage;
-
-		output.close();
-		return;
+		if(!outputStream.is_open()){
+			throw LoggingException("Could not log to file set");
+		}
 	}
 
-	throw LoggingException("Could not log to file set");
+	outputStream << message;
 }
 
 void FileOutputLoggingHandler::setFilePath(std::string filePath) {
-	std::ofstream output(filePath);
 
-	if (output.is_open()) {
-		output.close();
-
+	outputStream = std::ofstream(filePath);
+	if (outputStream.is_open()) {
 		this->filePath = filePath;
-
 		return;
 	}
 
@@ -134,3 +174,4 @@ LoggingException::LoggingException(const char* message) {
 const char* LoggingException::what() {
 	return message;
 }
+
