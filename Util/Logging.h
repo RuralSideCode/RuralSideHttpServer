@@ -26,12 +26,28 @@ public:
 		EXCEPTION = LOG_EXCEPTION
 	};
 
+	/**
+	 * Initializes the logger
+	 */
 	static void init();
+
+	/**
+	 * Closes the logger
+	 */
 	static void close();
 
+	/**
+	 * When enable is true, the logger will log to all the log handlers
+	 */
 	static bool enable;
 
+	/**
+	 * Adds a logging handler to the logger
+	 * @param handler The handler to add
+	 */
 	static void addHandler(LoggingHandler* handler);
+	
+	//TODO: Add remove handler
 	//void removeHandler(LoggingHandler& handler);
 
 	//Logging functions
