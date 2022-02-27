@@ -27,7 +27,12 @@ class ResourceLoader{
 
 		void setRootLocation(const char* rootLocation) { this->rootLocation = rootLocation; } 
 
-		Resource* load(std::string rootRelativePath);
+		/**
+		 * Loads a resource and stores it into the form of Resource
+		 * @param path Path for the resource. This is relative to the rootLocation set.
+		 * @return A pointer to the resource in the form of Resource. Returns null on failure to load the resource
+		 */
+		Resource* load(std::string path);
 
 	private:
 

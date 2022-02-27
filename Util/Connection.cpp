@@ -1,22 +1,47 @@
 #include "Connection.h"
 
 #include <cstring>
-#include <string.h>
 #include <string>
 #include <iostream>
+#include "Logging.h"
 
 #include <errno.h>
+
+//TODO: Fix this to where I can see ip address and wreck havok on the world
+std::string convertCDtoString(const ConnectionDetails& cd){
+	char s[INET6_ADDRSTRLEN];
+	Log << "FAMILY: " << (int)cd.address.sa_family << Logging::endl;
+	Log << "AF_INET: " << (int)AF_INET << Logging::endl;
+	Log << "AF_INET6: " << (int)AF_INET6 << Logging::endl;
+	Log << "INET6_ADDRSTRLEN: " << (int)INET6_ADDRSTRLEN << Logging::endl;
+	Log << "INET_ADDRSTRLEN: " << (int)INET_ADDRSTRLEN << Logging::endl;
+	switch(cd.address.sa_family){
+		case AF_INET:
+				inet_ntop(AF_INET, &(((struct sockaddr_in*)cd.socketfd)->sin_addr), s, sizeof(s));
+			break;
+		case AF_INET6:
+				inet_ntop(AF_INET6, &(((struct sockaddr_in6*)cd.socketfd)->sin6_addr), s, sizeof(s));
+			break;
+		default:
+				//Log.warning("convertCDtoString(ConnectionDetails& cd) just recieved a connection that was not valid");
+				inet_ntop(AF_INET, &(((struct sockaddr_in*)cd.socketfd)->sin_addr), s, sizeof(s));
+			break;
+	}
+
+	return std::string(s);	
+}
 
 Connection::Connection(){
 	std::memset(&addressHints, 0, sizeof(struct addrinfo));
 	addressHints.ai_family = AF_UNSPEC;
 }
 
-Connection::Connection(ConnectionDetails cd){
+Connection::Connection(const ConnectionDetails& cd){
 	std::memset(&addressHints, 0, sizeof(struct addrinfo));
 
 	//Check to make sure that the socket file descriptor is valid
 	if(cd.socketfd <= 0){
+		Log.error("A connection was trying to establish itself with an invalid socket file descriptor (SFD)");
 		return;
 	}
 
@@ -169,7 +194,7 @@ void BoundConnection::setPort(int _port){
 	this->port = std::to_string(_port);
 }
 
-void BoundConnection::setConnectionCallback(std::function<void(ConnectionDetails)> callback){
+void BoundConnection::setConnectionCallback(std::function<void(const ConnectionDetails&)> callback){
 	this->callback = callback;
 }
 

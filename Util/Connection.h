@@ -14,6 +14,8 @@ struct ConnectionDetails{
 	struct sockaddr address; /**<The address to connect to. This is only needed in a bound socket to send and receive data*/
 };
 
+std::string convertCDtoString(const ConnectionDetails& cd);
+
 /** Connection is used to connect to any addresses and ports. Once connected to these ports you are then able to send and receive data. This class is useful when for when you are wanting to make request to a server. It can also be used by BoundConnection to create connections from a server to a client without working with a BoundConnection.
  */
 class Connection{
@@ -25,7 +27,7 @@ class Connection{
 		/**Creates a Connection object with a already existing ConnectionDetails
 		 * @param cd The ConnectionDetails to use when constructing this Connection
 		 */
-		Connection(ConnectionDetails cd);
+		Connection(const ConnectionDetails& cd);
 
 		~Connection();
 
@@ -115,21 +117,21 @@ class BoundConnection{
 
 		/**This sets the callback for when BoundConnection is connected to by a client. It is very important to set this as this is the only way to handle requests from clients.
 		 * @param callback The callback to be called on a connection*/
-		void setConnectionCallback(std::function<void(ConnectionDetails)> callback);
+		void setConnectionCallback(std::function<void(const ConnectionDetails&)> callback);
 
 		/**Sends data accross a bound connection
 		 * @param buffer The buffer of data to send
 		 * @param bufferSize The size of const void* buffer
 		 * @param connection The connection that we should send data through
 		 * @return Returns the number of bytes that were successfully sent*/
-		int sendData(const void* buffer, int bufferSize, ConnectionDetails connection);
+		int sendData(const void* buffer, int bufferSize, const ConnectionDetails& connection);
 
 		/**Receives data accross a bound connection
 		 * @param buffer The buffer to receive data through
 		 * @param bufferSize Size of void* buffer
 		 * @param ConnectionDetails The connection that we should receive data through
 		 * @return Returns the number of bytes that were received*/
-		int receiveData(void* buffer, int bufferSize, ConnectionDetails connection);
+		int receiveData(void* buffer, int bufferSize, const ConnectionDetails& connection);
 
 		/**Creates a socket for the BoundConnection
 		 * @return Returns and error code. 0 on success. 1 on an error of retreiving address information. 2 on error creating socket.*/
@@ -160,7 +162,7 @@ class BoundConnection{
 
 		struct ConnectionDetails* connections = nullptr;
 
-		std::function<void(ConnectionDetails)> callback;
+		std::function<void(const ConnectionDetails&)> callback;
 
 		struct addrinfo constructAddressHints();
 

@@ -1,6 +1,6 @@
 #include "HttpServer.h"
 
-#include <iostream>
+#include "Logging.h"
 
 #include "HttpRequestParser.h"
 #include "HttpMessage.h"
@@ -9,7 +9,7 @@ HttpServer::HttpServer(){
 	resourceLoader = ResourceLoader();
 }
 
-void httpServerCallback(ConnectionDetails conn, HttpServer* server){
+void httpServerCallback(const ConnectionDetails& conn, HttpServer* server){
 	server->request(conn);
 }
 
@@ -18,7 +18,10 @@ auto createHttpServerCallback(HttpServer* server) -> decltype(std::bind(httpServ
 	return std::bind(httpServerCallback, std::placeholders::_1, server);
 }
 
-void HttpServer::request(ConnectionDetails conn){
+void HttpServer::request(const ConnectionDetails& conn){
+	std::string s_address = convertCDtoString(conn);
+	Log << Logging::INFO << "Request from " << s_address << Logging::endl;
+
 	Connection connection(conn);
 
 	char httpHeaderBuf[HEADER_BUF_SIZE] {0};
@@ -54,18 +57,27 @@ void HttpServer::httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize
 	HttpHeader sendHeader;
 	sendHeader.setRequestVersion("HTTP/1.1");
 
+	//If the resource was not found give an error 404
+	if(resource == nullptr){
+		sendHeader.setStatusCode("404");
+
+		HttpMessage httpMessage(sendHeader, nullptr, 0);	
+
+		connection.sendData(httpMessage.getData(), httpMessage.size());
+		return; //Return due to 404 error
+	}
+
+	sendHeader.setStatusCode("200 OK");
+
 	std::string contentType = "text/" + resourceName.substr(resourceName.find_last_of(".") + 1) + "; charset=UTF-8";
 	sendHeader.setField("Content-Type", contentType);
-	
 	sendHeader.setField("Content-Length", std::to_string(resource->size()));
-
 	sendHeader.setField("Server", "RuralSideServer/0.1 (Linux)");
 
 	HttpMessage httpMessage(sendHeader, (const void*)resource->getData(), resource->size());
-	httpMessage.createMessage();
 
 	int sendMessageSize;
-	const char* sendMessage = httpMessage.getData(sendMessageSize);
+	const char* sendMessage = httpMessage.getData(&sendMessageSize);
 
 	connection.sendData(sendMessage, sendMessageSize);
 }

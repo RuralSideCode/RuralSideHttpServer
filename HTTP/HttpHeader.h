@@ -36,10 +36,18 @@ class HttpHeader{
 		const std::string getRequestMethod() const;
 		const std::string getRequestResource() const;
 		const std::string getRequestVersion() const;
+		const std::string getStatusCode() const;
 
 		void setRequestMethod(std::string method);
 		void setRequestResource(std::string resource);
 		void setRequestVersion(std::string version);
+		void setStatusCode(std::string status);
+
+		/**
+		 * Returns a string version of the HttpHeader
+		 * @return String version of the header
+		 */
+		std::string str() const;
 	private:
 
 		std::map<std::string, std::string> httpHeaderEntries;
@@ -47,4 +55,5 @@ class HttpHeader{
 		std::string requestMethod;
 		std::string requestResource; 
 		std::string requestVersion;
+		std::string statusCode;
 };

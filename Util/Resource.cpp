@@ -3,16 +3,18 @@
 #include <fstream>
 #include <iostream>
 
+#include "Logging.h"
+
 Resource* ResourceLoader::load(std::string rootRelativePath){
 
 	Resource* resource = new Resource;
 
-	std::cout << getResourcePath(rootRelativePath) << std::endl;
 
-	std::ifstream in(getResourcePath(rootRelativePath), std::ios::binary);
+	std::string resourcePath = getResourcePath(rootRelativePath);
+
+	std::ifstream in(resourcePath, std::ios::binary);
 
 	if(in.is_open()){
-
 		in.seekg(0, std::ios::end);
 		size_t fileSize = in.tellg();
 		in.seekg(0, std::ios::beg);
@@ -26,6 +28,8 @@ Resource* ResourceLoader::load(std::string rootRelativePath){
 		return resource;
 	}
 	
+	//Logger << "Here" << Logging::endl;
+
 	return nullptr;
 }
 

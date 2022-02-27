@@ -15,7 +15,7 @@ class HttpServer{
 		
 		HttpServer();
 
-		void request(ConnectionDetails conn);
+		void request(const ConnectionDetails& conn);
 
 		void setResourceLocation(std::string location) { resourceLoader.setRootLocation(location.c_str()); }
 
@@ -31,6 +31,6 @@ class HttpServer{
 };
 
 
-void httpServerCallback(ConnectionDetails conn, HttpServer* server);
+void httpServerCallback(const ConnectionDetails& conn, HttpServer* server);
 
 auto createHttpServerCallback(HttpServer* server) -> decltype(std::bind(httpServerCallback, std::placeholders::_1, server));

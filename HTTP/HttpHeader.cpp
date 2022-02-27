@@ -1,7 +1,8 @@
 #include "HttpHeader.h"
 
 #include <vector>
-#include <iostream>
+
+#include <sstream>
 
 HttpHeader::HttpHeader(){
 	httpHeaderEntries = std::map<std::string, std::string>();
@@ -34,6 +35,9 @@ const std::string HttpHeader::getRequestResource() const{
 const std::string HttpHeader::getRequestVersion() const{
 	return this->requestVersion;
 }
+const std::string HttpHeader::getStatusCode() const{
+	return this->statusCode;
+}
 
 void HttpHeader::setRequestMethod(std::string method){
 	this->requestMethod = method;
@@ -43,4 +47,36 @@ void HttpHeader::setRequestResource(std::string resource){
 }
 void HttpHeader::setRequestVersion(std::string version){
 	this->requestVersion = version;
+}
+void HttpHeader::setStatusCode(std::string status){
+	this->statusCode = status;
+}
+
+std::string HttpHeader::str() const{
+	std::stringstream result;
+
+	//First line of the header
+	if(!requestMethod.empty()){
+		result << requestMethod << " ";
+	}
+	if(!requestResource.empty()){
+		result << requestResource << " ";
+	}
+	if(!requestVersion.empty()){
+		result << requestVersion << " ";
+	}
+	if(!statusCode.empty()){
+		result << statusCode << " ";
+	}
+
+	result << '\n';
+
+	//Adding the rest of the header
+	auto keys = getKeys();
+
+	for(std::string key : keys){
+		result << key << getField(key) << '\n';
+	}
+
+	return result.str();
 }

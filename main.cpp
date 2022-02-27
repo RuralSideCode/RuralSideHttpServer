@@ -5,31 +5,53 @@
 #include "HttpRequestParser.h"
 #include "HttpServer.h"
 
+#include "Logging.h"
+
 int main(){
+	Log.init();
+	
+	ConsoleLoggingHandler consoleLogger;
+	Log.addHandler(&consoleLogger);
+
+	FileOutputLoggingHandler fileLogger;
+	fileLogger.setFilePath("../Log.log");
+	Log.addHandler(&fileLogger);
+
+	Log << "Logger Initialized!" << Logging::endl;
+
+	//Connection setup
 	BoundConnection bc;
 	bc.setPort(80);
 
+	Log.info("Created a Bound Connection listening to port 80");
+
 	if(int rc = bc.createSocket() != 0){
-		std::cout << "Error Creating Socket" << std::endl;
-		std::cout << "Return code " << rc << std::endl;
-		return 1;
+		Log.error("Error creating a socket");
+		return rc;
 	}	
 
-	if(bc.bindConnection() != 0){
-		std::cout << "Error Binding Connection" << std::endl;
-		return 2;
+	if(int rc = bc.bindConnection() != 0){
+		Log.error("Could not bind connection");
+		return rc;
 	}
 
 	HttpServer server;
 	server.setResourceLocation("../Resources");
-	std::cout << "Created httpserver" << std::endl;
+
+	Log.info("Created HTTP server");
 
 	auto serverCallback = createHttpServerCallback(&server);
 	bc.setConnectionCallback(serverCallback);
 
+	Log.info("HTTP server is now connected to our connection");
+
 	bc.listenToConnection();
+
+	Log.info("Closing connection");
 
 	bc.closeConnection();
 	
+	Log.info("Closing program");
+	Log.close();
 	return 0;
 }
