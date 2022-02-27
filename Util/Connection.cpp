@@ -190,31 +190,31 @@ int BoundConnection::listenToConnection(){
 		return 1;
 	}
 
-	// while(isRunning){
+	while(isRunning){
 
-	struct sockaddr_storage* incomingConnection;
-	socklen_t len = 0;
+		struct sockaddr_storage* incomingConnection;
+		socklen_t len = 0;
 
-	int rc = accept(this->socketfd, (struct sockaddr*)incomingConnection, &len);
+		int rc = accept(this->socketfd, (struct sockaddr*)incomingConnection, &len);
 
-	if(rc == -1){
-		//TODO: Right now we are doing nothing we accept() fails
-		return 2;
+		if(rc == -1){
+			//TODO: Right now we are doing nothing we accept() fails
+			return 2;
+		}
+
+		ConnectionDetails connectionDetails{
+			rc, *(sockaddr*)incomingConnection
+		};
+
+		pid_t process_id = fork();
+		if(process_id == -1){
+			return 3;
+		}
+		else if(process_id == 0){ //If we are the child process
+			this->callback(connectionDetails);
+			return 0;
+		}
 	}
-
-	ConnectionDetails connectionDetails{
-		rc, *(sockaddr*)incomingConnection
-	};
-
-	pid_t process_id = fork();
-	if(process_id == -1){
-		return 3;
-	}
-	else if(process_id == 0){ //If we are the child process
-		this->callback(connectionDetails);
-		return 0;
-	}
-	//}
 
 	return 0;
 }

@@ -6,7 +6,6 @@
 #include "HttpServer.h"
 
 int main(){
-
 	BoundConnection bc;
 	bc.setPort(80);
 
@@ -22,6 +21,7 @@ int main(){
 	}
 
 	HttpServer server;
+	server.setResourceLocation("../Resources");
 	std::cout << "Created httpserver" << std::endl;
 
 	auto serverCallback = createHttpServerCallback(&server);

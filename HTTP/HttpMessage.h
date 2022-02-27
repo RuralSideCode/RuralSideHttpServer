@@ -7,21 +7,22 @@
 class HttpMessage{
 
 	public:
-		HttpMessage(HttpHeader& header, void* data, int dataSize);
+		HttpMessage(HttpHeader& header, const void* data, const int dataSize);
 		~HttpMessage();
 		
-		const char* createMessage() const;
+		const char* createMessage();
 
 		const char* getData(int& size);
+		std::string getData() { return this->completedMessage; }
 
 		const HttpHeader* getHttpHeader();
 
 	private:
-		char* data = nullptr;
+		const char* data = nullptr;
 		int dataSize = 0;
 
 		struct HttpHeader httpHeader;
 
-		char* completedMessage = nullptr;
+		std::string completedMessage = "";
 
 };

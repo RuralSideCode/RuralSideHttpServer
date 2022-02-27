@@ -3,19 +3,31 @@
 #include <functional>
 
 #include "Connection.h"
+#include "HttpHeader.h"
+#include "Resource.h"
+
+#define HEADER_BUF_SIZE 1024
+#define HEADER_DATA_BUF_SIZE 2048
 
 class HttpServer{
 
 	public:
 		
-		HttpServer() = default;
+		HttpServer();
 
-		int request(ConnectionDetails conn);
+		void request(ConnectionDetails conn);
+
+		void setResourceLocation(std::string location) { resourceLoader.setRootLocation(location.c_str()); }
 
 	private:
 
-	const char* loadResource(std::string resourceLocation);
+		ResourceLoader resourceLoader;
 
+		const char* loadResource(std::string resourceLocation);
+
+		void handleRequest(HttpHeader& httpHeader, char* data, int dataSize,  Connection& connection);
+
+		void httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize, Connection& connection);
 };
 
 

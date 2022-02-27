@@ -1,9 +1,10 @@
 #include "HttpMessage.h"
 
-#include<sstream>
+#include <sstream>
 #include <cstring>
+#include <iostream>
 
-HttpMessage::HttpMessage(HttpHeader& header, void* data, int dataSize){
+HttpMessage::HttpMessage(HttpHeader& header, const void* data, const int dataSize){
 	this->httpHeader = header;
 	this->data = (char*)data;
 	this->dataSize = dataSize;
@@ -15,9 +16,10 @@ HttpMessage::~HttpMessage(){
 		delete[] data;
 }
 
-const char* HttpMessage::createMessage() const{
+const char* HttpMessage::createMessage(){
 	std::stringstream message;
 
+	//Header Portion
 	message << httpHeader.getRequestMethod() << " " << httpHeader.getRequestResource() << " " << httpHeader.getRequestVersion() << '\n';
 
 	const std::vector<std::string> headerKeys = this->httpHeader.getKeys();
@@ -27,15 +29,16 @@ const char* HttpMessage::createMessage() const{
 	}
 
 	message << '\n';
+	
+	//Data portion
+	message.write(data, dataSize);
 
-	std::string _message = message.str();
+	completedMessage = message.str();
 
-	if(data != nullptr){
-		//This may fuck up bad
-		_message += completedMessage;	
-	}
+	return completedMessage.c_str();
+}
 
-	std::strcpy(completedMessage, _message.c_str());
-
-	return completedMessage;
+const char* HttpMessage::getData(int& size){
+	size = this->completedMessage.size();
+	return this->completedMessage.c_str();
 }

@@ -1,26 +1,36 @@
 #include "Resource.h"
 
 #include <fstream>
+#include <iostream>
 
 Resource* ResourceLoader::load(std::string rootRelativePath){
 
 	Resource* resource = new Resource;
 
+	std::cout << getResourcePath(rootRelativePath) << std::endl;
+
 	std::ifstream in(getResourcePath(rootRelativePath), std::ios::binary);
 
-	size_t fileSize = in.gcount();
+	if(in.is_open()){
 
-	resource->dataSize = fileSize;
+		in.seekg(0, std::ios::end);
+		size_t fileSize = in.tellg();
+		in.seekg(0, std::ios::beg);
 
-	resource->data = new char[fileSize];
+		resource->dataSize = fileSize;
 
-	in.read(resource->data, fileSize);
+		resource->data = new char[fileSize];
 
-	return resource;
+		in.read(resource->data, fileSize);
+
+		return resource;
+	}
+	
+	return nullptr;
 }
 
 std::string ResourceLoader::getResourcePath(std::string relativePath){
-	return rootLocation + "\\" + relativePath;	
+	return rootLocation + "/" + relativePath;	
 }
 
 Resource::~Resource(){
