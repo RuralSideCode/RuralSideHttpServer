@@ -44,6 +44,10 @@ void HttpRequestParser::addFieldToHeader(HttpHeader& header, std::stringstream& 
 	fieldName.erase(remove(fieldName.begin(), fieldName.end(), ' '), fieldName.end());
 	fieldValue.erase(remove(fieldValue.begin(), fieldValue.end(), ' '), fieldValue.end());
 
+	//Erase linefeed and carriage returns
+	fieldValue.erase(remove(fieldValue.begin(), fieldValue.end(), '\r'), fieldValue.end());
+	fieldValue.erase(remove(fieldValue.begin(), fieldValue.end(), '\n'), fieldValue.end());
+
 	header.setField(fieldName.c_str(), fieldValue.c_str());
 }
 
