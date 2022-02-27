@@ -19,7 +19,6 @@ auto createHttpServerCallback(HttpServer* server) -> decltype(std::bind(httpServ
 }
 
 void HttpServer::request(ConnectionDetails conn){
-
 	Connection connection(conn);
 
 	char httpHeaderBuf[HEADER_BUF_SIZE] {0};
@@ -31,7 +30,7 @@ void HttpServer::request(ConnectionDetails conn){
 	int httpHeaderDataSize = 0; 
 
 	HttpHeader* httpHeader = HttpRequestParser::parse(httpHeaderBuf, (void*)httpHeaderData, &httpHeaderDataSize);
-	
+
 	handleRequest(*httpHeader, httpHeaderData, httpHeaderDataSize, connection); 
 }
 
@@ -47,7 +46,7 @@ void HttpServer::httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize
 	std::string resourceName = httpHeader.getRequestResource();
 
 	if(resourceName == "/"){
-		resourceName = "index.html";
+		resourceName = "/index.html";
 	}
 
 	Resource* resource = resourceLoader.load(resourceName);
@@ -55,7 +54,9 @@ void HttpServer::httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize
 	HttpHeader sendHeader;
 	sendHeader.setRequestVersion("HTTP/1.1");
 
-	sendHeader.setField("Contnent-Type", "text/html; charset=UTF-8");
+	std::string contentType = "text/" + resourceName.substr(resourceName.find_last_of(".") + 1) + "; charset=UTF-8";
+	sendHeader.setField("Content-Type", contentType);
+	
 	sendHeader.setField("Content-Length", std::to_string(resource->size()));
 
 	sendHeader.setField("Server", "RuralSideServer/0.1 (Linux)");

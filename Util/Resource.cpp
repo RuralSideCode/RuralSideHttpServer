@@ -30,7 +30,7 @@ Resource* ResourceLoader::load(std::string rootRelativePath){
 }
 
 std::string ResourceLoader::getResourcePath(std::string relativePath){
-	return rootLocation + "/" + relativePath;	
+	return rootLocation + relativePath;	
 }
 
 Resource::~Resource(){
