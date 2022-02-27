@@ -1,6 +1,7 @@
 #include "HttpRequestParser.h"
 
 #include <string>
+#include <algorithm>
 
 #include <iostream>
 
@@ -38,6 +39,10 @@ void HttpRequestParser::addFieldToHeader(HttpHeader& header, std::stringstream& 
 
 	//Get fieldValue
 	std::getline(ss, fieldValue);
+
+	//Erase whitespace
+	fieldName.erase(remove(fieldName.begin(), fieldName.end(), ' '), fieldName.end());
+	fieldValue.erase(remove(fieldValue.begin(), fieldValue.end(), ' '), fieldValue.end());
 
 	header.setField(fieldName.c_str(), fieldValue.c_str());
 }
