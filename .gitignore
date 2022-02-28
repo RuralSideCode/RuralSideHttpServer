@@ -47,6 +47,7 @@ _deps
 
 /build
 /Resources
+/docs
 
 #Vim Swap Files
 # Swap
