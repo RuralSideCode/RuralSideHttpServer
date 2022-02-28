@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <unistd.h>
 
 #include "Connection.h" 
 #include "HttpRequestParser.h"
@@ -18,6 +19,9 @@ int main(){
 	Log.addHandler(&fileLogger);
 
 	Log << "Logger Initialized!" << Logging::endl;
+
+	//Get current Process id
+	pid_t main_pid = getpid();
 
 	//Connection setup
 	BoundConnection bc;
@@ -43,15 +47,17 @@ int main(){
 	auto serverCallback = createHttpServerCallback(&server);
 	bc.setConnectionCallback(serverCallback);
 
-	Log.info("HTTP server is now connected to our connection");
+	Log.info("HTTP server is now connected");
 
-	bc.listenToConnection();
+	int returnPid = bc.listenToConnection();
 
-	Log.info("Closing connection");
+	if(returnPid != main_pid){
+		return 0;
+	}
 
 	bc.closeConnection();
 	
-	Log.info("Closing program");
+	Log.info("Closing Application");
 	Log.close();
 	return 0;
 }

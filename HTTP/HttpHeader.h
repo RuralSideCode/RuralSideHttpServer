@@ -18,7 +18,7 @@ class HttpHeader{
 		 * @param fieldName The key value to search for
 		 * @return A value that was found within the HttpHeader, or a nullptr if one does not exist
 		 */
-		const char* getField(std::string fieldName) const;
+		std::string getField(std::string fieldName) const;
 
 		/**
 		 * This will set a field and value pair within the HttpHeader

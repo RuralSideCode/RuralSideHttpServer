@@ -32,13 +32,10 @@ std::string convertCDtoString(const ConnectionDetails& cd){
 }
 
 Connection::Connection(){
-	std::memset(&addressHints, 0, sizeof(struct addrinfo));
-	addressHints.ai_family = AF_UNSPEC;
+	addressHints->ai_family = AF_UNSPEC;
 }
 
 Connection::Connection(const ConnectionDetails& cd){
-	std::memset(&addressHints, 0, sizeof(struct addrinfo));
-
 	//Check to make sure that the socket file descriptor is valid
 	if(cd.socketfd <= 0){
 		Log.error("A connection was trying to establish itself with an invalid socket file descriptor (SFD)");
@@ -49,7 +46,7 @@ Connection::Connection(const ConnectionDetails& cd){
 }
 
 Connection::~Connection(){
-	freeaddrinfo(this->addressInfo);
+	this->closeConnection();
 }
 
 ConnectionDetails Connection::getConnectionDetails(){
@@ -62,12 +59,12 @@ ConnectionDetails Connection::getConnectionDetails(){
 }
 
 void Connection::setProtocol(Protocol_t protocol){
-	addressHints.ai_protocol = protocol;
+	addressHints->ai_protocol = protocol;
 
 	if(protocol == PROTOCOL_TCP)
-		addressHints.ai_socktype = SOCK_STREAM;
+		addressHints->ai_socktype = SOCK_STREAM;
 	else
-		addressHints.ai_socktype = SOCK_DGRAM;
+		addressHints->ai_socktype = SOCK_DGRAM;
 }
 
 void Connection::setAddress(const char* address){
@@ -75,7 +72,7 @@ void Connection::setAddress(const char* address){
 }
 
 void Connection::setSocketType(SocketType_t socketType){
-	addressHints.ai_socktype = socketType;
+	addressHints->ai_socktype = socketType;
 }
 
 void Connection::setPort(const char* _port){
@@ -92,6 +89,8 @@ int Connection::createConnection(){
 		return 1;
 	}
 
+	addressHints = (struct addrinfo*)std::malloc(sizeof(struct addrinfo));
+
 	if(int rc = connect(socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){ 
 		std::cout << "Could not create a valid connection with the current socket" << std::endl;
 		return 2;
@@ -101,12 +100,17 @@ int Connection::createConnection(){
 }
 
 void Connection::closeConnection(){
-	if(socketfd <= 0) return;
-	close(socketfd);
+	if(socketfd > 0){
+		close(socketfd);
+	}
+
+	if(this->addressHints != nullptr){
+		freeaddrinfo(this->addressHints);
+	}
 }
 
 int Connection::createSocket(){
-	if(int rc = getaddrinfo(address.c_str(), port.c_str(), &addressHints, &addressInfo) != 0){
+	if(int rc = getaddrinfo(address.c_str(), port.c_str(), addressHints, &addressInfo) != 0){
 		std::cout << "Error retreiving address info" << std::endl;
 		std::cout << rc << std::endl;
 		std::cout << gai_strerror(rc) << std::endl;
@@ -120,6 +124,12 @@ int Connection::createSocket(){
 	}
 
 	return 0;
+}
+
+bool Connection::isAlive(){
+	char pingData[64]{0};
+	int sent_bytes = sendData(pingData, sizeof(pingData));	
+	return sent_bytes > 0;
 }
 
 int Connection::sendData(const void* buffer, int bufferSize){
@@ -212,9 +222,10 @@ struct addrinfo BoundConnection::constructAddressHints(){
 
 int BoundConnection::listenToConnection(){
 	if(int rc = listen(this->socketfd, this->max_connections) == -1){
-		return 1;
+		return -1;
 	}
-
+	
+	pid_t process_id;
 	while(isRunning){
 
 		struct sockaddr_storage* incomingConnection;
@@ -224,23 +235,25 @@ int BoundConnection::listenToConnection(){
 
 		if(rc == -1){
 			//TODO: Right now we are doing nothing we accept() fails
-			return 2;
+			return -2;
 		}
 
+		//Setting the sockaddr* to the connectionDetails might be causing a memory fault
 		ConnectionDetails connectionDetails{
-			rc, *(sockaddr*)incomingConnection
+			rc, *(struct sockaddr*)incomingConnection
 		};
 
-		pid_t process_id = fork();
+		process_id = fork();
+
 		if(process_id == -1){
-			return 3;
+			return -3;
 		}
 		else if(process_id == 0){ //If we are the child process
 			this->callback(connectionDetails);
-			return 0;
+			break;
 		}
 	}
 
-	return 0;
+	return process_id;
 }
 

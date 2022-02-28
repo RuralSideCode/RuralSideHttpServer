@@ -5,14 +5,18 @@
 
 #include <iostream>
 
-HttpHeader* HttpRequestParser::parse(const char* header, void* data, int* dataSize){
+#include "Logging.h"
+
+HttpHeader* HttpRequestParser::parse(std::string header, void* data, int* dataSize){
+	//Check if the header is empty
+	if(header.empty()) return nullptr;
+
 	std::stringstream stream(header);
 
 	return HttpRequestParser::parse(stream, data, dataSize);
 }
 
 HttpHeader* HttpRequestParser::parse(std::stringstream& header, void* data, int* dataSize){
-
 	std::string line;
 
 	HttpHeader* httpHeader = new HttpHeader;

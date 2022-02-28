@@ -9,6 +9,8 @@
 #define HEADER_BUF_SIZE 1024
 #define HEADER_DATA_BUF_SIZE 2048
 
+//#define LOG_HEADERS
+
 class HttpServer{
 
 	public:

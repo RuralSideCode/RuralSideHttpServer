@@ -3,13 +3,14 @@
 #include <vector>
 
 #include <sstream>
+#include "Logging.h"
 
 HttpHeader::HttpHeader(){
 	httpHeaderEntries = std::map<std::string, std::string>();
 }
 
-const char* HttpHeader::getField(std::string fieldName) const{
-	return this->httpHeaderEntries.find(fieldName)->second.c_str();
+std::string HttpHeader::getField(std::string fieldName) const{
+	return this->httpHeaderEntries.find(fieldName)->second;
 }
 
 void HttpHeader::setField(std::string fieldName, std::string fieldValue){
@@ -75,7 +76,7 @@ std::string HttpHeader::str() const{
 	auto keys = getKeys();
 
 	for(std::string key : keys){
-		result << key << getField(key) << '\n';
+		result << key << ": " << getField(key) << '\n';
 	}
 
 	return result.str();

@@ -19,22 +19,43 @@ auto createHttpServerCallback(HttpServer* server) -> decltype(std::bind(httpServ
 }
 
 void HttpServer::request(const ConnectionDetails& conn){
-	std::string s_address = convertCDtoString(conn);
-	Log << Logging::INFO << "Request from " << s_address << Logging::endl;
+	//std::string s_address = convertCDtoString(conn);
+	//Log << Logging::INFO << "Request from " << s_address << Logging::endl;
+	
+	//Log << Logging::INFO << "New HTTP Request" << Logging::endl;
 
 	Connection connection(conn);
 
-	char httpHeaderBuf[HEADER_BUF_SIZE] {0};
+	bool shouldStayOpen = false;
 
-	//We will probably recieve the whole http header in one go, but it is a possibility that we do not
-	int recievedBytes = connection.receiveData(httpHeaderBuf, HEADER_BUF_SIZE);
+	do{
+		char httpHeaderBuf[HEADER_BUF_SIZE] {0};
 
-	char httpHeaderData[HEADER_DATA_BUF_SIZE] {0};
-	int httpHeaderDataSize = 0; 
+		//We will probably recieve the whole http header in one go, but it is a possibility that we do not
+		int recievedBytes = connection.receiveData(httpHeaderBuf, HEADER_BUF_SIZE);
 
-	HttpHeader* httpHeader = HttpRequestParser::parse(httpHeaderBuf, (void*)httpHeaderData, &httpHeaderDataSize);
+		char httpHeaderData[HEADER_DATA_BUF_SIZE] {0};
+		int httpHeaderDataSize = 0; 
 
-	handleRequest(*httpHeader, httpHeaderData, httpHeaderDataSize, connection); 
+		HttpHeader* httpHeader = HttpRequestParser::parse(httpHeaderBuf, (void*)httpHeaderData, &httpHeaderDataSize);
+		
+		//If the header is null then the connection should end
+		if(httpHeader == nullptr){
+			break;
+		}
+
+#ifdef LOG_HEADERS
+		//Log << "HTTP HEADER: \n" << httpHeader->str() << Logging::endl << Logging::endl;
+#endif
+
+		//If the http header we recieved wants to keep the connection alive, then we will
+		shouldStayOpen = httpHeader->getField("Connection").compare("keep-alive") == 0;
+
+		handleRequest(*httpHeader, httpHeaderData, httpHeaderDataSize, connection); 
+	} while(shouldStayOpen);
+
+	//Log.info("Ending Http Request Session");
+	connection.closeConnection();
 }
 
 void HttpServer::handleRequest(HttpHeader& httpHeader, char* data, int dataSize,  Connection& connection){
@@ -67,12 +88,13 @@ void HttpServer::httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize
 		return; //Return due to 404 error
 	}
 
-	sendHeader.setStatusCode("200 OK");
+	sendHeader.setStatusCode("200");
 
 	std::string contentType = "text/" + resourceName.substr(resourceName.find_last_of(".") + 1) + "; charset=UTF-8";
 	sendHeader.setField("Content-Type", contentType);
 	sendHeader.setField("Content-Length", std::to_string(resource->size()));
 	sendHeader.setField("Server", "RuralSideServer/0.1 (Linux)");
+	sendHeader.setField("Connection", "keep-alive");
 
 	HttpMessage httpMessage(sendHeader, (const void*)resource->getData(), resource->size());
 

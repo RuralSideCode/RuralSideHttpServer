@@ -81,6 +81,13 @@ class Connection{
 		@return Amount of data received in bytes*/
 		int receiveData(void* buffer, int bufferSize);
 
+		/**
+		 * This will ping the connection with data to see if any data will go throught
+		 * THIS DOES NOT WORK!!!
+		 * @return True if the connection is still alive.
+		 */
+		bool isAlive();
+
 	private:
 		SFD_t socketfd = -1;
 		struct addrinfo* addressInfo;
@@ -89,7 +96,7 @@ class Connection{
 		std::string address = "";
 
 	protected:
-		struct addrinfo addressHints;
+		struct addrinfo* addressHints = nullptr;
 
 };
 
@@ -142,7 +149,10 @@ class BoundConnection{
 		 * @return Returns an error code. 0 on success. 1 on invalid socket. 2 on error binding*/
 		int bindConnection();
 
-		/**Will make the BoundConnection start listening to the port*/
+		/**
+		 * Will make the BoundConnection start listening to the port
+		 * @return The process id of the forked process, or a negative value if there was an error.
+		 * */
 		int listenToConnection();
 
 		/**Closes the BoundConnection*/
