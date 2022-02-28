@@ -99,7 +99,7 @@ void HttpServer::httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize
 	HttpMessage httpMessage(sendHeader, (const void*)resource->getData(), resource->size());
 
 	int sendMessageSize;
-	const char* sendMessage = httpMessage.getData(&sendMessageSize);
+	const char* sendMessage = httpMessage.getMessage(&sendMessageSize);
 
 	connection.sendData(sendMessage, sendMessageSize);
 }

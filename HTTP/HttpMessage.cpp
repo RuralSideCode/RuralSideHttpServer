@@ -31,7 +31,7 @@ void HttpMessage::createMessage(){
 	completedMessage = message.str();
 }
 
-const char* HttpMessage::getData(int* size){
+const char* HttpMessage::getMessage(int* size){
 	*size = this->completedMessage.size();
 	return this->completedMessage.c_str();
 }
