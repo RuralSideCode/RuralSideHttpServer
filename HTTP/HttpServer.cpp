@@ -80,6 +80,7 @@ void HttpServer::httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize
 
 	//If the resource was not found give an error 404
 	if(resource == nullptr){
+		
 		sendHeader.setStatusCode("404");
 
 		HttpMessage httpMessage(sendHeader, nullptr, 0);	
@@ -90,10 +91,11 @@ void HttpServer::httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize
 
 	sendHeader.setStatusCode("200");
 
+	setupHttpHeader(&sendHeader);
+
 	std::string contentType = "text/" + resourceName.substr(resourceName.find_last_of(".") + 1) + "; charset=UTF-8";
 	sendHeader.setField("Content-Type", contentType);
 	sendHeader.setField("Content-Length", std::to_string(resource->size()));
-	sendHeader.setField("Server", "RuralSideServer/0.1 (Linux)");
 	sendHeader.setField("Connection", "keep-alive");
 
 	HttpMessage httpMessage(sendHeader, (const void*)resource->getData(), resource->size());
@@ -102,4 +104,9 @@ void HttpServer::httpGETRequest(HttpHeader& httpHeader, char* data, int dataSize
 	const char* sendMessage = httpMessage.getMessage(&sendMessageSize);
 
 	connection.sendData(sendMessage, sendMessageSize);
+}
+
+void setupHttpHeader(HttpHeader* header){
+	header->setField("Server", "RuralSideServer/0.1 (Linux");
+	header->setField("Host", "ruralsidecode.com");
 }

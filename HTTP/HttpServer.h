@@ -52,3 +52,9 @@ void httpServerCallback(const ConnectionDetails& conn, HttpServer* server);
  * @return Returns the callback function for the HTTP Server
  */
 auto createHttpServerCallback(HttpServer* server) -> decltype(std::bind(httpServerCallback, std::placeholders::_1, server));
+
+/**
+ * Puts all the basic information for the http header that would normally be put
+ * @param header The HttpHeader to be setup
+ */
+void setupHttpHeader(HttpHeader* header);
