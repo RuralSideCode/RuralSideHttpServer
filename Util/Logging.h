@@ -92,6 +92,10 @@ private:
 	 bool isInit;
 };
 
+typedef Logging Logger;
+
+extern Logging Log;
+
 Logging& operator << (Logging& logger, const char* val);
 Logging& operator << (Logging& logger, const char val);
 Logging& operator << (Logging& logger, const int val);
@@ -110,8 +114,6 @@ public:
 private:
 	const char* message;
 };
-
-extern Logging Log;
 
 class LoggingHandler {
 public:

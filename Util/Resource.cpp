@@ -9,7 +9,6 @@ Resource* ResourceLoader::load(std::string rootRelativePath){
 
 	Resource* resource = new Resource;
 
-
 	std::string resourcePath = getResourcePath(rootRelativePath);
 
 	std::ifstream in(resourcePath, std::ios::binary);
@@ -28,8 +27,6 @@ Resource* ResourceLoader::load(std::string rootRelativePath){
 		return resource;
 	}
 	
-	//Logger << "Here" << Logging::endl;
-
 	return nullptr;
 }
 
