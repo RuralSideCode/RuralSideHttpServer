@@ -3,12 +3,25 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <errno.h>
+
 #include "Logging.h"
 
-#include <errno.h>
+ConnectionDetails::ConnectionDetails(SFD_t socketfd, struct sockaddr* address){
+	this->socketfd = socketfd;
+
+	if(address != nullptr)
+		std::memcpy((void*)&this->address, (const void*)address, sizeof(struct sockaddr));
+}
+
+ConnectionDetails::ConnectionDetails(const ConnectionDetails& other){
+	this->socketfd = other.socketfd;
+	std::memcpy((void*)&this->address, (const void*)&other.address, sizeof(struct sockaddr));
+}
 
 //TODO: Fix this to where I can see ip address and wreck havok on the world
 std::string convertCDtoString(const ConnectionDetails& cd){
+	/*
 	char s[INET6_ADDRSTRLEN];
 	Log << "FAMILY: " << (int)cd.address.sa_family << Logging::endl;
 	Log << "AF_INET: " << (int)AF_INET << Logging::endl;
@@ -27,8 +40,9 @@ std::string convertCDtoString(const ConnectionDetails& cd){
 				inet_ntop(AF_INET, &(((struct sockaddr_in*)cd.socketfd)->sin_addr), s, sizeof(s));
 			break;
 	}
+	*/
 
-	return std::string(s);	
+	return std::string();	
 }
 
 Connection::Connection(){
@@ -37,12 +51,12 @@ Connection::Connection(){
 
 Connection::Connection(const ConnectionDetails& cd){
 	//Check to make sure that the socket file descriptor is valid
-	if(cd.socketfd <= 0){
+	if(cd.getSocketfd() <= 0){
 		Log.error("A connection was trying to establish itself with an invalid socket file descriptor (SFD)");
 		return;
 	}
 
-	socketfd = cd.socketfd;
+	connectionDetails = cd;
 }
 
 Connection::~Connection(){
@@ -50,12 +64,7 @@ Connection::~Connection(){
 }
 
 ConnectionDetails Connection::getConnectionDetails(){
-	struct ConnectionDetails cd{
-		this->socketfd,
-		*this->addressInfo->ai_addr
-	};
-
-	return cd;
+	return this->connectionDetails;
 }
 
 void Connection::setProtocol(Protocol_t protocol){
@@ -84,14 +93,15 @@ void Connection::setPort(int _port){
 }
 
 int Connection::createConnection(){
-	if(socketfd <= 0){
+	if(connectionDetails.getSocketfd() <= 0){
 		std::cout << "Please create a valid socket before trying to connect" << std::endl;
 		return 1;
 	}
 
 	addressHints = (struct addrinfo*)std::malloc(sizeof(struct addrinfo));
 
-	if(int rc = connect(socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){ 
+	int socketfd;
+	if(int rc = connect(socketfd, addressHints->ai_addr, sizeof(struct sockaddr)) == -1){ 
 		std::cout << "Could not create a valid connection with the current socket" << std::endl;
 		return 2;
 	}
@@ -100,8 +110,8 @@ int Connection::createConnection(){
 }
 
 void Connection::closeConnection(){
-	if(socketfd > 0){
-		close(socketfd);
+	if(connectionDetails.getSocketfd() > 0){
+		close(connectionDetails.getSocketfd());
 	}
 
 	if(this->addressHints != nullptr){
@@ -110,15 +120,16 @@ void Connection::closeConnection(){
 }
 
 int Connection::createSocket(){
-	if(int rc = getaddrinfo(address.c_str(), port.c_str(), addressHints, &addressInfo) != 0){
+	struct addrinfo* res;
+	if(int rc = getaddrinfo(address.c_str(), port.c_str(), addressHints, &this->addressInfo) != 0){
 		std::cout << "Error retreiving address info" << std::endl;
 		std::cout << rc << std::endl;
 		std::cout << gai_strerror(rc) << std::endl;
 		return 1;
 	}
 
-	socketfd = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
-	if(socketfd == -1){
+	connectionDetails.socketfd = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
+	if(connectionDetails.socketfd == -1){
 		std::cout << "Error creating socket" << std::endl;
 		return 2;
 	}
@@ -133,12 +144,12 @@ bool Connection::isAlive(){
 }
 
 int Connection::sendData(const void* buffer, int bufferSize){
-	int sent_bytes = send(socketfd, buffer, bufferSize, 0);
+	int sent_bytes = send(connectionDetails.socketfd, buffer, bufferSize, 0);
 	return sent_bytes;
 }
 
 int Connection::receiveData(void* buffer, int bufferSize){
-	int recived_bytes = recv(socketfd, buffer, bufferSize, 0);
+	int recived_bytes = recv(connectionDetails.socketfd, buffer, bufferSize, 0);
 	return recived_bytes;
 }
 
@@ -239,9 +250,7 @@ int BoundConnection::listenToConnection(){
 		}
 
 		//Setting the sockaddr* to the connectionDetails might be causing a memory fault
-		ConnectionDetails connectionDetails{
-			rc, *(struct sockaddr*)incomingConnection
-		};
+		ConnectionDetails connectionDetails(rc, (struct sockaddr*) incomingConnection);
 
 		process_id = fork();
 
@@ -255,5 +264,8 @@ int BoundConnection::listenToConnection(){
 	}
 
 	return process_id;
+}
+void BoundConnection::shutdown(){
+	isRunning = false; //This might cause problems with async server
 }
 

@@ -4,14 +4,28 @@
 
 #include <functional>
 #include <string>
+#include <cstring>
 
 /**
  * Connection Details is used to keep track of a connection.
  * It can be used to pass around a connection for other programs to use it
  */
-struct ConnectionDetails{
-	SFD_t socketfd; /**<The socket file descriptor used to identify a web socket*/
-	struct sockaddr address; /**<The address to connect to. This is only needed in a bound socket to send and receive data*/
+class ConnectionDetails{
+	public:
+		ConnectionDetails() = default;
+		ConnectionDetails(SFD_t socketfd, struct sockaddr* address);
+		ConnectionDetails(const ConnectionDetails& other);
+
+		const SFD_t getSocketfd() const { return this->socketfd; }
+		const struct sockaddr* getAddress() const { return &this->address; }
+		void setSocketfd(SFD_t socket) { this->socketfd = socket; }
+		void setAddress(struct sockaddr* address) { std::memcpy((void*)&this->address, (const void*)address, sizeof(struct sockaddr)); }
+
+	private:
+		SFD_t socketfd; /**<The socket file descriptor used to identify a web socket*/
+		struct sockaddr address; /**<The address to connect to. This is only needed in a bound socket to send and receive data*/
+		friend class Connection;
+		friend class BoundConnection;
 };
 
 std::string convertCDtoString(const ConnectionDetails& cd);
@@ -89,7 +103,7 @@ class Connection{
 		bool isAlive();
 
 	private:
-		SFD_t socketfd = -1;
+		ConnectionDetails connectionDetails;
 		struct addrinfo* addressInfo;
 
 		std::string port = "";
@@ -157,6 +171,17 @@ class BoundConnection{
 
 		/**Closes the BoundConnection*/
 		void closeConnection();
+
+		/**
+		 * Returns true if the server is currently running
+		 * @return True if the server is currently running
+		 */
+		bool isCurrentlyRunning() const { return isRunning; }
+
+		/**
+		 * Sends a shutdown notice to the BoundConnection
+		 */
+		void shutdown();
 
 	private:
 		SFD_t socketfd = -1;
