@@ -26,7 +26,9 @@ void HttpMessage::createMessage(){
 	message << '\n';
 	
 	//Data portion
-	message.write(data, dataSize);
+	if(data != nullptr){
+		message.write(data, dataSize);
+	}
 
 	completedMessage = message.str();
 }
