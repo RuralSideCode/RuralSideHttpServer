@@ -36,37 +36,37 @@ void Logging::addHandler(LoggingHandler* handler) {
 	handlers.push_back(handler);
 }
 
-void Logging::logFormatted(const char* message, Logging::LogLevel level) {
+void Logging::logFormatted(std::string message, Logging::LogLevel level) {
 	for (auto h : handlers) {
 		if (h != nullptr)
 			h->log(message, level);
 	}
 }
 
-void Logging::log(const char* message){
+void Logging::log(std::string message){
 	for (auto h : handlers) {
 		if (h != nullptr)
 			h->logMessage(message);
 	}
 }
 
-void Logging::info(const char* message) {
+void Logging::info(std::string message) {
 	logFormatted(message, Logging::INFO);
 }
 
-void Logging::warning(const char* message) {
+void Logging::warning(std::string message) {
 	logFormatted(message, Logging::WARNING);
 }
 
-void Logging::error(const char* message) {
+void Logging::error(std::string message) {
 	logFormatted(message, Logging::ERROR);
 }
 
-void Logging::debug(const char* message) {
+void Logging::debug(std::string message) {
 	logFormatted(message, Logging::DEBUG);
 }
 
-void Logging::critical(const char* message) {
+void Logging::critical(std::string message) {
 	logFormatted(message, Logging::CRITICAL);
 }
 
@@ -95,10 +95,10 @@ std::string Logging::getBasicLogMessage(const char* message, Logging::LogLevel l
 	return ss.str();
 }
 
-void LoggingHandler::log(const char* message, Logging::LogLevel messageLevel) {
+void LoggingHandler::log(std::string message, Logging::LogLevel messageLevel) {
 	if (!this->enable) return;
 
-	std::string formattedMessage = Logging::getBasicLogMessage(message, messageLevel);
+	std::string formattedMessage = Logging::getBasicLogMessage(message.c_str(), messageLevel);
 
 	if (messageLevel >= this->level) {
 		this->logMessage(formattedMessage.c_str());
@@ -140,11 +140,11 @@ Logging& operator << (Logging& logger, const Logging::LogLevel& level){
 
 //void LoggingHandler::logMessage(const char* message, Logging::LogLevel messageLevel) {}
 
-void ConsoleLoggingHandler::logMessage(const char* message) {
+void ConsoleLoggingHandler::logMessage(std::string message) {
 	std::cout << message;
 }
 
-void FileOutputLoggingHandler::logMessage(const char* message) {
+void FileOutputLoggingHandler::logMessage(std::string message) {
 	if(!outputStream.is_open()){
 		outputStream = std::ofstream(this->filePath);
 

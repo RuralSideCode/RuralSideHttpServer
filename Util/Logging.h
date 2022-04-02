@@ -52,13 +52,13 @@ public:
 	//void removeHandler(LoggingHandler& handler);
 
 	//Logging functions
-	void logFormatted(const char* message, LogLevel level);
-	void log(const char* message);
-	void info(const char* message);
-	void debug(const char* message);
-	void warning(const char* message);
-	void error(const char* message);
-	void critical(const char* message);
+	void logFormatted(std::string message, LogLevel level);
+	void log(std::string message);
+	void info(std::string message);
+	void debug(std::string message);
+	void warning(std::string message);
+	void error(std::string message);
+	void critical(std::string message);
 	void exception(std::exception e);
 
 	static const char* logLevelToString(LogLevel level);
@@ -119,16 +119,16 @@ class LoggingHandler {
 public:
 	Logging::LogLevel level = Logging::LogLevel::DEBUG;
 
-	void log(const char* message, Logging::LogLevel messageLevel);
+	void log(std::string message, Logging::LogLevel messageLevel);
 
-	virtual void logMessage(const char* message) = 0;
+	virtual void logMessage(std::string message) = 0;
 
 	bool enable = true;
 };
 
 class ConsoleLoggingHandler : public LoggingHandler {
 public:
-	virtual void logMessage(const char* message);
+	virtual void logMessage(std::string message);
 };
 
 class FileOutputLoggingHandler : public LoggingHandler {
@@ -140,7 +140,7 @@ public:
 			outputStream.close();
 	}
 
-	virtual void logMessage(const char* message);
+	virtual void logMessage(std::string message);
 
 	void setFilePath(std::string filePath);
 
