@@ -27,17 +27,17 @@ int main(){
 	pid_t main_pid = getpid();
 
 	//Connection setup
-	AsyncBoundConnection abc;
-	abc.setPort(80);
+	AsyncBoundConnection asyncBoundConnection;
+	asyncBoundConnection.setPort(80);
 
 	Log.info("Created a Bound Connection listening to port 80");
 
-	if(int rc = abc.createSocket() != 0){
+	if(int rc = asyncBoundConnection.createSocket() != 0){
 		Log.error("Error creating a socket");
 		return rc;
 	}	
 
-	if(int rc = abc.bindConnection() != 0){
+	if(int rc = asyncBoundConnection.bindConnection() != 0){
 		Log.error("Could not bind connection");
 		return rc;
 	}
@@ -48,19 +48,19 @@ int main(){
 	Log.info("Created HTTP server");
 
 	auto serverCallback = createHttpServerCallback(&server);
-	abc.setConnectionCallback(serverCallback);
+	asyncBoundConnection.setConnectionCallback(serverCallback);
 
 	Log.info("HTTP server is now connected");
 
 	Log.info("Launching Asyncrounous Server");
 
-	abc.startConnection();
+	asyncBoundConnection.startConnection();
 
-	while(abc.isCurrentlyRunning()){
+	while(asyncBoundConnection.isCurrentlyRunning()){
 		char close;
 		std::cin >> close;
 		if(close == 'q'){
-			abc.shutdown();
+			asyncBoundConnection.shutdown();
 		}
 	}
 	
