@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <memory>
+#include <functional>
 
 #include "Connection.h" 
 #include "HttpRequestParser.h"
@@ -10,6 +11,14 @@
 #include "AsyncServer.h"
 
 #include "Logging.h"
+
+#include "Command.h"
+
+void shutdownServer(AsyncBoundConnection* connection){
+	connection->shutdownConnection();
+
+	pthread_join(connection->getCurrentThread(), NULL);
+}
 
 int main(){
 	Log.init();
@@ -21,7 +30,7 @@ int main(){
 	fileLogger.setFilePath("../Log.log");
 	Log.addHandler(&fileLogger);
 
-	Log << "Logger Initialized!" << Logging::endl;
+	Log << "LOGGER: Logger Initialized!" << Logging::endl;
 
 	//Get current Process id
 	pid_t main_pid = getpid();
@@ -34,11 +43,13 @@ int main(){
 
 	if(int rc = asyncBoundConnection.createSocket() != 0){
 		Log.error("Error creating a socket");
+		Log << "RETURN CODE: " << rc << Logging::endl;
 		return rc;
 	}	
 
 	if(int rc = asyncBoundConnection.bindConnection() != 0){
 		Log.error("Could not bind connection");
+		Log << "RETURN CODE: " << rc << Logging::endl;
 		return rc;
 	}
 
@@ -54,15 +65,21 @@ int main(){
 
 	Log.info("Launching Asyncrounous Server");
 
+	ActionCommand shutdownServerCommand("Shutdown", std::bind(shutdownServer, &asyncBoundConnection));
+
 	asyncBoundConnection.startConnection();
 
 	while(asyncBoundConnection.isCurrentlyRunning()){
-		char close;
+		std::string close;
 		std::cin >> close;
-		if(close == 'q'){
-			asyncBoundConnection.shutdown();
+		
+		if(close.compare(shutdownServerCommand.getCommandName()) == 0){
+			shutdownServerCommand.invoke();
+			break;
 		}
+
 	}
+
 	
 	Log.info("Closing Application");
 	Log.close();

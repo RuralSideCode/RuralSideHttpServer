@@ -114,6 +114,12 @@ class Connection{
 
 };
 
+//Constants for BoundConnection
+#define BOUNDCONNECTION_NSOCKET (1<<0)
+#define BOUNDCONNECTION_FAIL_BIND (1<<2)
+#define BOUNDCONNECTION_NADDRINFO (1<<3)
+#define BOUNDCONNECTION_OK 0
+
 /**BoundConnection is used as a way for a machine to listen on a port. These can only listen to local ports (thus why there is no way to set address). Once you are listening you will be able to set callbacks for when connections are made. BoundConnections should be used when setting up a server (to serve clients that connect).
  */
 class BoundConnection{
@@ -181,7 +187,7 @@ class BoundConnection{
 		/**
 		 * Sends a shutdown notice to the BoundConnection
 		 */
-		void shutdown();
+		void shutdownConnection();
 
 	private:
 		SFD_t socketfd = -1;

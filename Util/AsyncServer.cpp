@@ -15,7 +15,12 @@ void* startBoundConnection(void* boundConnection){
 
 	return nullptr;
 }
- pthread_t launchBoundConnection(BoundConnection* boundConnection){
+
+AsyncBoundConnection::~AsyncBoundConnection(){
+	pthread_join(currentThread, NULL);
+}
+
+pthread_t launchBoundConnection(BoundConnection* boundConnection){
 
 	 pthread_t thread;
 
@@ -34,7 +39,7 @@ void* startAsyncBoundConnection(void* abc){
 	pid_t thread_pid = getpid();
 	pid_t connection_pid = connection->listenToConnection();
 
-	if(connection_pid ==  thread_pid){
+	if(connection_pid == thread_pid){
 		connection->closeConnection();
 		pthread_exit(0);
 	}

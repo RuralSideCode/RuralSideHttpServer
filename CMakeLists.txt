@@ -16,7 +16,10 @@ file(GLOB UtilSource "${PROJECT_SOURCE_DIR}/Util/*.cpp")
 file(GLOB HTTPInclude "${PROJECT_SOURCE_DIR}/HTTP/*.h")
 file(GLOB HTTPSource "${PROJECT_SOURCE_DIR}/HTTP/*.cpp")
 
-list(APPEND ServerSource ${UtilInclude} ${UtilSource} ${HTTPInclude} ${HTTPSource})
+file(GLOB CLIInclude "${PROJECT_SOURCE_DIR}/CLI/*.h")
+file(GLOB CLISource "${PROJECT_SOURCE_DIR}/CLI/*.cpp")
+
+list(APPEND ServerSource ${UtilInclude} ${UtilSource} ${HTTPInclude} ${HTTPSource} ${CLIInclude} ${CLISource})
 
 add_executable(Server ${ServerSource})
 
@@ -24,5 +27,4 @@ add_executable(Server ${ServerSource})
 find_package (Threads REQUIRED)
 target_link_libraries(Server ${CMAKE_THREAD_LIBS_INIT})
 
-include_directories(Server PRIVATE "${PROJECT_SOURCE_DIR}/Util/" "${PROJECT_SOURCE_DIR}/HTTP/")
-
+include_directories(Server PRIVATE "${PROJECT_SOURCE_DIR}/Util/" "${PROJECT_SOURCE_DIR}/HTTP/" "${PROJECT_SOURCE_DIR}/CLI/" )

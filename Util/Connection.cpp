@@ -174,31 +174,31 @@ void BoundConnection::setProtocol(Protocol_t protocol){
 }
 
 int BoundConnection::createSocket(){
-	struct addrinfo hints = this->constructAddressHints();
+	AddressInfo_t hints = this->constructAddressHints();
 
 	if(int rc = getaddrinfo(NULL, port.c_str(), &hints, &this->addressInfo) != 0){
-		return 1;
+		return BOUNDCONNECTION_NADDRINFO;
 	}
 
 	this->socketfd = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
 
 	if(this->socketfd == -1){
-		return 2;
+		return BOUNDCONNECTION_NSOCKET;
 	}
 
-	return 0;
+	return BOUNDCONNECTION_OK;
 }
 
 int BoundConnection::bindConnection(){
 	if(socketfd == -1){
-		return 1;
+		return BOUNDCONNECTION_NSOCKET;
 	}
 
 	if(int rc = bind(this->socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){
-		return 2;
+		return BOUNDCONNECTION_FAIL_BIND;
 	}
 
-	return 0;
+	return BOUNDCONNECTION_OK;
 }
 
 void BoundConnection::closeConnection(){
@@ -265,7 +265,8 @@ int BoundConnection::listenToConnection(){
 
 	return process_id;
 }
-void BoundConnection::shutdown(){
+void BoundConnection::shutdownConnection(){
 	isRunning = false; //This might cause problems with async server
+	shutdown(this->socketfd, SHUT_RDWR); //This fixes the problem with Async Server :) (Also should probably call this anyways)
 }
 
