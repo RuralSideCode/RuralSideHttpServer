@@ -79,7 +79,6 @@ int main(){
 		}
 
 	}
-
 	
 	Log.info("Closing Application");
 	Log.close();
