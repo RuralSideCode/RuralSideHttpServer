@@ -98,7 +98,7 @@ int Connection::createConnection(){
 		return 1;
 	}
 
-	addressHints = (struct addrinfo*)std::malloc(sizeof(struct addrinfo));
+	addressHints = (struct addrinfo*)std::malloc(sizeof(struct addrinfo)); 
 
 	int socketfd;
 	if(int rc = connect(socketfd, addressHints->ai_addr, sizeof(struct sockaddr)) == -1){ 

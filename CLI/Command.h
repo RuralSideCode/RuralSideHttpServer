@@ -3,6 +3,8 @@
 #include <functional>
 #include <string>
 
+#include "Connection.h"
+
 class Command {
 
 	public:
@@ -30,4 +32,15 @@ class ActionCommand : public Command {
 	private:
 		std::function<void()> command;
 
+};
+
+class ShutdownCommand : public Command {
+	
+	public:
+		ShutdownCommand(BoundConnection* connection);
+
+		void invoke();
+
+	private:
+		BoundConnection* connection = nullptr;
 };

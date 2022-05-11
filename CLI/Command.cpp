@@ -1,3 +1,5 @@
+#include <pthread.h>
+
 #include "Command.h"
 
 ActionCommand::ActionCommand(std::string commandName, std::function<void()> command): Command(commandName) {
@@ -12,3 +14,12 @@ void ActionCommand::invoke() {
 	this->command();
 }
 
+ShutdownCommand::ShutdownCommand(BoundConnection* connection): Command("Shutdown") {
+	this->connection = connection;
+}
+
+void ShutdownCommand::invoke(){
+	this->connection->shutdownConnection();
+
+
+}

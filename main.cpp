@@ -13,6 +13,7 @@
 #include "Logging.h"
 
 #include "Command.h"
+#include "Configuration.h"
 
 void shutdownServer(AsyncBoundConnection* connection){
 	connection->shutdownConnection();
@@ -37,9 +38,10 @@ int main(){
 
 	//Connection setup
 	AsyncBoundConnection asyncBoundConnection;
-	asyncBoundConnection.setPort(8000);
-
-	Log.info("Created a Bound Connection listening to port 80");
+	ServerConfiguration serverConfiguration;
+	serverConfiguration.loadJson("../Configuration/serverConfig.json");
+	serverConfiguration.setServer((BoundConnection*)&asyncBoundConnection);
+	serverConfiguration.configureServer();
 
 	if(int rc = asyncBoundConnection.createSocket() != BOUNDCONNECTION_OK){
 		Log.error("Error creating a socket");
@@ -65,9 +67,9 @@ int main(){
 
 	Log.info("Launching Asyncrounous Server");
 
-	ActionCommand shutdownServerCommand("Shutdown", std::bind(shutdownServer, &asyncBoundConnection));
-
 	asyncBoundConnection.startConnection();
+
+	ShutdownCommand shutdownServerCommand((BoundConnection*)&asyncBoundConnection);
 
 	while(asyncBoundConnection.isCurrentlyRunning()){
 		std::string close;
@@ -80,7 +82,6 @@ int main(){
 		}
 
 	}
-
 	
 	Log.info("Closing Application");
 	Log.close();
