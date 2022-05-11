@@ -37,17 +37,17 @@ int main(){
 
 	//Connection setup
 	AsyncBoundConnection asyncBoundConnection;
-	asyncBoundConnection.setPort(80);
+	asyncBoundConnection.setPort(8000);
 
 	Log.info("Created a Bound Connection listening to port 80");
 
-	if(int rc = asyncBoundConnection.createSocket() != 0){
+	if(int rc = asyncBoundConnection.createSocket() != BOUNDCONNECTION_OK){
 		Log.error("Error creating a socket");
 		Log << "RETURN CODE: " << rc << Logging::endl;
 		return rc;
 	}	
 
-	if(int rc = asyncBoundConnection.bindConnection() != 0){
+	if(int rc = asyncBoundConnection.bindConnection() != BOUNDCONNECTION_OK){
 		Log.error("Could not bind connection");
 		Log << "RETURN CODE: " << rc << Logging::endl;
 		return rc;
@@ -71,6 +71,7 @@ int main(){
 
 	while(asyncBoundConnection.isCurrentlyRunning()){
 		std::string close;
+		std::cout << ">: ";
 		std::cin >> close;
 		
 		if(close.compare(shutdownServerCommand.getCommandName()) == 0){

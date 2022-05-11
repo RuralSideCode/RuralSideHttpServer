@@ -137,7 +137,8 @@ int Connection::createSocket(){
 	return 0;
 }
 
-bool Connection::isAlive(){
+// TODO: Implement this
+int Connection::ping(){
 	char pingData[64]{0};
 	int sent_bytes = sendData(pingData, sizeof(pingData));	
 	return sent_bytes > 0;
@@ -167,6 +168,7 @@ BoundConnection::~BoundConnection(){
 void BoundConnection::setProtocol(Protocol_t protocol){
 	this->protocol = protocol;
 
+	//TODO: This is trash
 	if(protocol == PROTOCOL_TCP)
 		socketType = SOCK_STREAM;
 	else if(protocol == PROTOCOL_UDP)
@@ -202,9 +204,7 @@ int BoundConnection::bindConnection(){
 }
 
 void BoundConnection::closeConnection(){
-	for(int i = 0; i < max_connections; i++){
-		close(connections[i].socketfd);
-	}
+	close(this->socketfd);
 }
 
 void BoundConnection::setPort(const char* _port){
@@ -267,6 +267,7 @@ int BoundConnection::listenToConnection(){
 }
 void BoundConnection::shutdownConnection(){
 	isRunning = false; //This might cause problems with async server
-	shutdown(this->socketfd, SHUT_RDWR); //This fixes the problem with Async Server :) (Also should probably call this anyways)
+	this->closeConnection(); //This fixes the problem with Async Server :) (Also should probably call this anyways)
+	shutdown(this->socketfd, SHUT_RD);
 }
 

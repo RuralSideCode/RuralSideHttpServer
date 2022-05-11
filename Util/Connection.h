@@ -98,9 +98,9 @@ class Connection{
 		/**
 		 * This will ping the connection with data to see if any data will go throught
 		 * THIS DOES NOT WORK!!!
-		 * @return True if the connection is still alive.
+		 * @return Returns the amount of bytes recieved
 		 */
-		bool isAlive();
+		int ping();
 
 	private:
 		ConnectionDetails connectionDetails;
