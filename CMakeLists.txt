@@ -27,4 +27,9 @@ add_executable(Server ${ServerSource})
 find_package (Threads REQUIRED)
 target_link_libraries(Server ${CMAKE_THREAD_LIBS_INIT})
 
+#JSON parser
+set(nlohmann_json_DIR "~/libs/json/build")
+find_package(nlohmann_json 3.2.0 REQUIRED)
+target_link_libraries(Server nlohmann_json::nlohmann_json)
+
 include_directories(Server PRIVATE "${PROJECT_SOURCE_DIR}/Util/" "${PROJECT_SOURCE_DIR}/HTTP/" "${PROJECT_SOURCE_DIR}/CLI/" )
