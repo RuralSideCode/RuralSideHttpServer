@@ -19,7 +19,10 @@ file(GLOB HTTPSource "${PROJECT_SOURCE_DIR}/HTTP/*.cpp")
 file(GLOB CLIInclude "${PROJECT_SOURCE_DIR}/CLI/*.h")
 file(GLOB CLISource "${PROJECT_SOURCE_DIR}/CLI/*.cpp")
 
-list(APPEND ServerSource ${UtilInclude} ${UtilSource} ${HTTPInclude} ${HTTPSource} ${CLIInclude} ${CLISource})
+file(GLOB ServiceMonitorInclude "${PROJECT_SOURCE_DIR}/ServiceMonitoring/*.h")
+file(GLOB ServiceMonitorSource "${PROJECT_SOURCE_DIR}/ServiceMonitoring/*.cpp")
+
+list(APPEND ServerSource ${UtilInclude} ${UtilSource} ${HTTPInclude} ${HTTPSource} ${CLIInclude} ${CLISource} ${ServiceMonitorInclude} ${ServiceMonitorSource})
 
 add_executable(Server ${ServerSource})
 
