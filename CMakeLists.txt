@@ -8,8 +8,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_BUILD_TYPE Debug)
 
-list(APPEND ServerSource main.cpp)
-
 file(GLOB UtilInclude "${PROJECT_SOURCE_DIR}/Util/*.h" )
 file(GLOB UtilSource "${PROJECT_SOURCE_DIR}/Util/*.cpp")
 
@@ -24,15 +22,24 @@ file(GLOB ServiceMonitorSource "${PROJECT_SOURCE_DIR}/ServiceMonitoring/*.cpp")
 
 list(APPEND ServerSource ${UtilInclude} ${UtilSource} ${HTTPInclude} ${HTTPSource} ${CLIInclude} ${CLISource} ${ServiceMonitorInclude} ${ServiceMonitorSource})
 
-add_executable(Server ${ServerSource})
+add_executable(Server main.cpp ${ServerSource})
+add_executable(Tests tests.cpp ${ServerSource})
 
 #Threading packages
 find_package (Threads REQUIRED)
 target_link_libraries(Server ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(Tests ${CMAKE_THREAD_LIBS_INIT})
 
 #JSON parser
-set(nlohmann_json_DIR "~/libs/json/build")
 find_package(nlohmann_json 3.2.0 REQUIRED)
 target_link_libraries(Server nlohmann_json::nlohmann_json)
+target_link_libraries(Tests nlohmann_json::nlohmann_json)
 
-include_directories(Server PRIVATE "${PROJECT_SOURCE_DIR}/Util/" "${PROJECT_SOURCE_DIR}/HTTP/" "${PROJECT_SOURCE_DIR}/CLI/" )
+#UnitTest++
+find_package(UnitTest++ REQUIRED)
+target_link_libraries(Tests UnitTest++)
+
+list(APPEND INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/Util/" "${PROJECT_SOURCE_DIR}/HTTP/" "${PROJECT_SOURCE_DIR}/CLI/" "${PROJECT_SOURCE_DIR}/Configuration/" "${PROJECT_SOURCE_DIR}/ServiceMonitoring/")
+
+include_directories(Server PRIVATE  ${INCLUDE_DIRECTORIES})
+include_directories(Tests PRIVATE ${INCLUDE_DIRECTORIES})

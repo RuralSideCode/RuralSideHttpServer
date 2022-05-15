@@ -1,15 +1,39 @@
 #pragma once
 
 #include <string>
+#include <exception>
 
 class Resource{
 	public:
+
+		class ResourceException : public std::exception {
+			public:
+				ResourceException() = default;
+				ResourceException(const char* message): message(message) {}
+
+				const char* what() { return this->message; }
+			private:
+				const char* message = nullptr;
+		};
+
 		Resource() = default;
 
 		~Resource();
 
 		const char* getData() { return data; }
+		void setData(char* data, size_t size) {
+			if (this->data != nullptr) {
+				delete[] this->data;
+			}
+
+			this->data = data;
+			this->dataSize = size;
+		}
+		void copyData(const char* data, size_t size);
+
 		size_t size() { return dataSize; }
+
+		void save() throw(Resource::ResourceException);
 
 	private:
 		char* data = nullptr;
