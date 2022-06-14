@@ -46,7 +46,10 @@ std::string convertCDtoString(const ConnectionDetails& cd){
 }
 
 Connection::Connection(){
-	addressHints->ai_family = AF_UNSPEC;
+	this->addressHints = new struct addrinfo;
+	this->addressHints->ai_family = AF_UNSPEC;
+
+	this->addressInfo = new struct addrinfo;
 }
 
 Connection::Connection(const ConnectionDetails& cd){
@@ -61,6 +64,10 @@ Connection::Connection(const ConnectionDetails& cd){
 
 Connection::~Connection(){
 	this->closeConnection();
+
+	if (this->addressHints != nullptr) freeaddrinfo(this->addressHints);
+
+	if (this->addressInfo != nullptr) freeaddrinfo(this->addressInfo);
 }
 
 ConnectionDetails Connection::getConnectionDetails(){
@@ -94,47 +101,44 @@ void Connection::setPort(int _port){
 
 int Connection::createConnection(){
 	if(connectionDetails.getSocketfd() <= 0){
-		std::cout << "Please create a valid socket before trying to connect" << std::endl;
-		return 1;
+		Log.error("Please create a valid socket before trying to connect");
+		return CONNECTION_NSOCKET;
 	}
 
-	addressHints = (struct addrinfo*)std::malloc(sizeof(struct addrinfo)); 
-
-	int socketfd;
-	if(int rc = connect(socketfd, addressHints->ai_addr, sizeof(struct sockaddr)) == -1){ 
-		std::cout << "Could not create a valid connection with the current socket" << std::endl;
-		return 2;
+	if(int rc = connect(this->connectionDetails.socketfd, addressInfo->ai_addr, sizeof(struct sockaddr)) == -1){ 
+		int err = errno;
+		Log.error("Could not create a valid connection with the current socket");
+		//Log.error(strerror(err));
+		return CONNECTION_FAIL_CONNECT;
 	}
 
-	return 0;
+	return CONNECTION_OK;
 }
 
 void Connection::closeConnection(){
 	if(connectionDetails.getSocketfd() > 0){
 		close(connectionDetails.getSocketfd());
 	}
-
-	if(this->addressHints != nullptr){
-		freeaddrinfo(this->addressHints);
-	}
 }
 
-int Connection::createSocket(){
-	struct addrinfo* res;
-	if(int rc = getaddrinfo(address.c_str(), port.c_str(), addressHints, &this->addressInfo) != 0){
-		std::cout << "Error retreiving address info" << std::endl;
-		std::cout << rc << std::endl;
-		std::cout << gai_strerror(rc) << std::endl;
-		return 1;
+int Connection::createSocket() {
+	if(int rc = getaddrinfo(address.c_str(), port.c_str(), this->addressHints, &this->addressInfo) != 0){
+		Log.error("Error retreiving address info");
+		Log << Logging::ERROR << "Error Code: " << rc << Logging::endl;
+		Log.error(gai_strerror(rc));
+
+		return CONNECTION_NSOCKET;
 	}
 
 	connectionDetails.socketfd = socket(addressInfo->ai_family, addressInfo->ai_socktype, addressInfo->ai_protocol);
+
 	if(connectionDetails.socketfd == -1){
-		std::cout << "Error creating socket" << std::endl;
-		return 2;
+		Log.error("Error creating socket");
+		Log.error(strerror(errno));
+		return CONNECTION_NSOCKET;
 	}
 
-	return 0;
+	return CONNECTION_OK;
 }
 
 // TODO: Implement this

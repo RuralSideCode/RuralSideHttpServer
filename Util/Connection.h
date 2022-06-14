@@ -30,6 +30,12 @@ class ConnectionDetails{
 
 std::string convertCDtoString(const ConnectionDetails& cd);
 
+//Constants for BoundConnection
+#define CONNECTION_NSOCKET (1<<0)
+#define CONNECTION_FAIL_CONNECT (1<<2)
+#define CONNECTION_NADDRINFO (1<<3)
+#define CONNECTION_OK 0
+
 /** Connection is used to connect to any addresses and ports. Once connected to these ports you are then able to send and receive data. This class is useful when for when you are wanting to make request to a server. It can also be used by BoundConnection to create connections from a server to a client without working with a BoundConnection.
  */
 class Connection{
@@ -104,14 +110,13 @@ class Connection{
 
 	private:
 		ConnectionDetails connectionDetails;
-		struct addrinfo* addressInfo;
+		struct addrinfo* addressInfo = nullptr;
 
 		std::string port = "";
 		std::string address = "";
 
 	protected:
 		struct addrinfo* addressHints = nullptr;
-
 };
 
 //Constants for BoundConnection
